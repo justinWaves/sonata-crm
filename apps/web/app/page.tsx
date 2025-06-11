@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import Logo from '@/components/Logo';
 
 type Customer = {
   id: string;
@@ -12,26 +13,14 @@ type Customer = {
 };
 
 export default function Home() {
-  const [customers, setCustomers] = useState<Customer[]>([]);
-
-  useEffect(() => {
-    axios.get('http://localhost:4000/customers')
-      .then(res => setCustomers(res.data))
-      .catch(err => console.error('Error fetching customers:', err));
-  }, []);
-
   return (
-    <main className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Customer List</h1>
-      <ul className="space-y-2">
-        {customers.map((cust) => (
-          <li key={cust.id} className="p-2 border rounded">
-            <p><strong>Name:</strong> {cust.name}</p>
-            <p><strong>Phone:</strong> {cust.phone}</p>
-            <p><strong>Email:</strong> {cust.email || 'N/A'}</p>
-          </li>
-        ))}
-      </ul>
+    <main className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
+      <Logo className="mb-6" width={500} />
+      <p className="text-xl text-gray-600 mb-8 text-center max-w-xl">Modern booking and management for piano technicians and their customers.</p>
+      <div className="flex gap-4">
+        <a href="/customer/book" className="bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transition">Book Now</a>
+        <a href="/tech/login" className="bg-white border border-black text-black px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">Technician Login</a>
+      </div>
     </main>
   );
 }
