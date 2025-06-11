@@ -18,5 +18,9 @@ app.get('/customers', async (req, res) => {
   }
 });
 
+app.get('/', (req, res) => {
+  res.json({ message: 'Welcome to the Sonata CRM API!' });
+});
+
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`API running on http://localhost:${PORT}`));

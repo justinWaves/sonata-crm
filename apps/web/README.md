@@ -9,9 +9,9 @@ A modern booking and management platform for piano technicians and their custome
    yarn install
    ```
 2. Run the development server:
-   ```bash
-   yarn dev
-   ```
+```bash
+yarn dev
+```
 
 Visit [http://localhost:3001](http://localhost:3001) to view the app.
 
