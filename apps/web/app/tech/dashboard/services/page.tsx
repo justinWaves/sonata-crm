@@ -89,7 +89,7 @@ export default function ServicesPage() {
   };
 
   return (
-    <div className="p-8 relative">
+    <div className="p-8 min-w-2xl relative">
       <h2 className="text-2xl font-bold mb-4">Services</h2>
       <div className="bg-white rounded shadow p-6">
         <button 
@@ -107,7 +107,7 @@ export default function ServicesPage() {
                 <th></th>
                 <th className="py-2">Service</th>
                 <th className="py-2">Description</th>
-                <th className="py-2 text-right">Price</th>
+                <th className="py-2 text-center">Price</th>
                 <th className="py-2 text-right">Duration</th>
               </tr>
             </thead>

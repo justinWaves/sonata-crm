@@ -4,17 +4,19 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 
-export default function TechLoginPage() {
+export default function TechSignUpPage() {
   const router = useRouter();
-  const [step, setStep] = useState<'email' | 'password'>('email');
+  const [step, setStep] = useState<'info' | 'password'>('info');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleEmailSubmit = (e: React.FormEvent) => {
+  const handleInfoSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) {
-      setError('Please enter your email address.');
+    if (!firstName || !lastName || !email) {
+      setError('Please fill out all fields.');
       return;
     }
     setError('');
@@ -24,11 +26,11 @@ export default function TechLoginPage() {
   const handlePasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!password) {
-      setError('Please enter your password.');
+      setError('Please create a password.');
       return;
     }
     setError('');
-    // Simulate successful login
+    // Simulate successful sign up
     router.push('/tech/dashboard');
   };
 
@@ -39,11 +41,39 @@ export default function TechLoginPage() {
           <div className="w-14 h-14 mb-6 flex items-center justify-center">
             <Image src="/sonata-logo.svg" alt="Sonata Logo" width={40} height={40} />
           </div>
-          <h1 className="text-2xl font-bold mb-4">Technicians Log In</h1>
+          <h1 className="text-2xl font-bold mb-4">Sign Up</h1>
         </div>
         <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm flex flex-col items-center">
-          {step === 'email' && (
-            <form className="w-full space-y-4" onSubmit={handleEmailSubmit}>
+          {step === 'info' && (
+            <form className="w-full space-y-4" onSubmit={handleInfoSubmit}>
+              <div className="flex gap-2">
+                <div className="w-1/2">
+                  <label htmlFor="firstName" className="block text-sm font-medium mb-1">First name</label>
+                  <input
+                    id="firstName"
+                    name="firstName"
+                    type="text"
+                    className="input w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Your first name"
+                    value={firstName}
+                    onChange={e => setFirstName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="w-1/2">
+                  <label htmlFor="lastName" className="block text-sm font-medium mb-1">Last name</label>
+                  <input
+                    id="lastName"
+                    name="lastName"
+                    type="text"
+                    className="input w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Your last name"
+                    value={lastName}
+                    onChange={e => setLastName(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
               <div>
                 <label htmlFor="email" className="block text-sm font-medium mb-1">Email</label>
                 <input
@@ -71,24 +101,25 @@ export default function TechLoginPage() {
                   id="password"
                   name="password"
                   type="password"
-                  autoComplete="current-password"
+                  autoComplete="new-password"
                   className="input w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Your password"
+                  placeholder="Create a password"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   required
                 />
               </div>
               {error && <div className="text-red-600 text-sm">{error}</div>}
-              <button type="submit" className="btn w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 transition cursor-pointer">Sign in</button>
-              <button type="button" className="w-full text-blue-600 underline text-sm mt-2 cursor-pointer" onClick={() => { setStep('email'); setPassword(''); setError(''); }}>Go back</button>
+              <button type="submit" className="btn w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 transition cursor-pointer">Continue</button>
+              <button type="button" className="w-full text-blue-600 underline text-sm mt-2 cursor-pointer" onClick={() => { setStep('info'); setPassword(''); setError(''); }}>Go back</button>
             </form>
           )}
           <div className="mt-8 text-center text-gray-700 text-sm">
-            Don&apos;t have an account?{' '}
-            <span className="text-blue-600 font-semibold underline cursor-pointer" onClick={() => router.push('/tech/sign-up')}>Sign Up</span>
+            Already have an account?{' '}
+            <span className="text-blue-600 font-semibold underline cursor-pointer" onClick={() => router.push('/tech/login')}>Sign in</span>
           </div>
         </div>
       </div>
+
   );
 } 

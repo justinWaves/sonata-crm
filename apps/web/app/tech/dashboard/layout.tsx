@@ -1,3 +1,4 @@
+import Header from '@/components/Header';
 import Link from 'next/link';
 
 const navItems = [
@@ -11,7 +12,9 @@ const navItems = [
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <>
+    <Header />
+    <div className="flex min-h-[calc(100vh-56px)] bg-gray-50">
       {/* Sidebar */}
       <aside className="w-56 bg-white border-r border-gray-200 flex flex-col py-8 px-4">
         <nav className="flex-1 flex flex-col gap-2">
@@ -31,5 +34,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {children}
       </main>
     </div>
+    </>
   );
 } 

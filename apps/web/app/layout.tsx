@@ -1,7 +1,6 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
-import Header from '@/components/Header';
 
 const geist = Geist({ subsets: ["latin"] });
 
@@ -18,7 +17,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`bg-gray-50 ${geist.className}`}>
-        <Header />
         {children}
       </body>
     </html>
