@@ -9,7 +9,7 @@ generator client {
 
 model Technician {
   id            String   @id @default(uuid())
-  firstName          String
+  firstName     String
   lastName      String
   email         String   @unique
   phone         String
@@ -35,7 +35,8 @@ model Customer {
   id             String        @id @default(uuid())
   techId         String
   tech           Technician    @relation(fields: [techId], references: [id])
-  name           String
+    firstName     String
+  lastName      String
   phone          String
   email          String?
   address        String
@@ -85,6 +86,8 @@ model ServiceType {
   id           String        @id @default(uuid())
   name         String        @unique
   description  String?
+  price        Int?
+  duration     String?
   services     Service[]
   appointments Appointment[]
 }

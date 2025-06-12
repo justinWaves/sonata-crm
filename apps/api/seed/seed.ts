@@ -1,11 +1,14 @@
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
+console.log('Seeding started');
+
 async function main() {
   // Create a technician with custom message and service prices
   const technician = await prisma.technician.create({
     data: {
-      name: 'Justin Waves',
+      firstName: 'Justin Waves',
+      lastName: 'Waves',
       email: 'justin@example.com',
       phone: '555-1234',
       customMessage: 'Thank you for booking with Sonata Piano Works!',
@@ -29,11 +32,11 @@ async function main() {
   // Create service types
   await prisma.serviceType.createMany({
     data: [
-      { name: 'Standard Tuning', description: 'Basic tuning service' },
-      { name: 'Touch-Up Tuning', description: 'Quick tuning after pitch adjustment' },
-      { name: 'Minor Repair', description: 'Fixes to small mechanical issues' },
-      { name: 'Major Repair', description: 'Larger repair tasks including action part replacements' },
-      { name: 'Lubrication', description: 'Lubricate moving parts for better feel and longevity' },
+      { name: 'Standard Tuning', description: 'Basic tuning service', price: 195, duration: '1.5 hr' },
+      { name: 'Touch-Up Tuning', description: 'Quick tuning after pitch adjustment', price: 120, duration: '1 hr' },
+      { name: 'Minor Repair', description: 'Fixes to small mechanical issues', price: 150, duration: '1 hr' },
+      { name: 'Major Repair', description: 'Larger repair tasks including action part replacements', price: 275, duration: '2 hr' },
+      { name: 'Lubrication', description: 'Lubricate moving parts for better feel and longevity', price: 60, duration: '0.5 hr' },
     ],
   });
 
@@ -49,7 +52,8 @@ async function main() {
   const customer = await prisma.customer.create({
     data: {
       techId: technician.id,
-      name: 'Jane Doe',
+      firstName: 'Jane',
+      lastName: 'Doe',
       phone: '555-5678',
       email: 'jane@example.com',
       address: '123 Piano Street, Santa Cruz, CA',
@@ -103,3 +107,5 @@ main()
     await prisma.$disconnect();
     process.exit(1);
   });
+
+console.log('Seeding complete!');
