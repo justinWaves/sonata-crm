@@ -19,4 +19,19 @@ export async function PUT(
   
   const updatedService = await res.json();
   return NextResponse.json(updatedService);
+}
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  const res = await fetch(`http://localhost:4000/service-types/${params.id}`, {
+    method: 'DELETE',
+  });
+  
+  if (!res.ok) {
+    return NextResponse.json({ error: 'Failed to delete service' }, { status: 500 });
+  }
+  
+  return NextResponse.json({ success: true });
 } 

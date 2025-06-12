@@ -65,6 +65,19 @@ app.put('/service-types/:id', async (req, res) => {
   }
 });
 
+app.delete('/service-types/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await prisma.serviceType.delete({
+      where: { id },
+    });
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error deleting service type:', err);
+    res.status(500).json({ error: 'Failed to delete service type' });
+  }
+});
+
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to the Sonata CRM API!' });
 });
