@@ -21,6 +21,23 @@ async function main() {
     },
   });
 
+    // --- Second Technician: Ron Henderson ---
+    const technician2 = await prisma.technician.create({
+      data: {
+        firstName: 'Ron',
+        lastName: 'Henderson',
+        email: 'ron@example.com',
+        phone: '555-9876',
+        customMessage: 'Looking forward to servicing your piano! - Ron',
+        servicePrices: {
+          "Standard Tuning": 180,
+          "Touch-Up Tuning": 110,
+          "Minor Repair": 140,
+          "Major Repair": 260
+        },
+      },
+    });
+
   // Add some service areas for the technician
   await prisma.serviceArea.createMany({
     data: [
@@ -48,7 +65,7 @@ async function main() {
     throw new Error('Standard Tuning service type not found');
   }
 
-  // Create a customer
+  // Create a customer for Justin Waves
   const customer = await prisma.customer.create({
     data: {
       techId: technician.id,
@@ -61,7 +78,7 @@ async function main() {
     },
   });
 
-  // Create a piano
+  // Create a piano for Jane
   const piano = await prisma.piano.create({
     data: {
       customerId: customer.id,
@@ -75,7 +92,7 @@ async function main() {
     },
   });
 
-  // Create a service record (historical)
+  // Create a service record (historical) for Jane
   await prisma.service.create({
     data: {
       techId: technician.id,
@@ -86,7 +103,7 @@ async function main() {
     },
   });
 
-  // Create an upcoming appointment
+  // Create an upcoming appointment for Jane
   await prisma.appointment.create({
     data: {
       technicianId: technician.id,
@@ -96,6 +113,67 @@ async function main() {
       scheduledAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3), // 3 days from now
       timeSlot: 'Morning',
       notes: 'Client prefers early morning slots. Bring tools for pedal check.',
+    },
+  });
+
+
+
+  // Add service areas for Ron
+  await prisma.serviceArea.createMany({
+    data: [
+      { zipCode: '95010', technicianId: technician2.id },
+      { zipCode: '95003', technicianId: technician2.id },
+    ],
+  });
+
+  // Create a customer for Ron
+  const customer2 = await prisma.customer.create({
+    data: {
+      techId: technician2.id,
+      firstName: 'Sam',
+      lastName: 'Smith',
+      phone: '555-4321',
+      email: 'sam@example.com',
+      address: '456 Music Ave, Aptos, CA',
+      referralCode: 'REF2026',
+    },
+  });
+
+  // Create a piano for Sam
+  const piano2 = await prisma.piano.create({
+    data: {
+      customerId: customer2.id,
+      type: 'Upright',
+      brand: 'Kawai',
+      model: 'K-300',
+      year: 2010,
+      serialNumber: 'KW987654',
+      lastServiceDate: new Date('2024-11-15'),
+      notes: 'Sticky key in upper register',
+    },
+  });
+
+  // Create a service record (historical) for Sam
+  await prisma.service.create({
+    data: {
+      techId: technician2.id,
+      customerId: customer2.id,
+      pianoId: piano2.id,
+      serviceTypeId: standardTuning.id,
+      notes: 'Touch-up tuning and minor repair on sticky key.',
+    },
+  });
+
+  // Create an upcoming appointment for Sam
+  await prisma.appointment.create({
+    data: {
+      technicianId: technician2.id,
+      customerId: customer2.id,
+      pianoId: piano2.id,
+      serviceTypeId: standardTuning.id,
+      scheduledAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 5), // 5 days from now
+      timeSlot: 'Afternoon',
+      notes: 'Check sticky key and perform standard tuning.',
     },
   });
 }
