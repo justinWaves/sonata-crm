@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 
-export async function GET() {
+export const GET = async () => {
   const res = await fetch('http://localhost:4000/service-types');
   const data = await res.json();
   return NextResponse.json(data);
-}
+};
 
-export async function POST(request: Request) {
+export const POST = async (request: Request) => {
   const data = await request.json();
   const res = await fetch('http://localhost:4000/service-types', {
     method: 'POST',
@@ -22,4 +22,4 @@ export async function POST(request: Request) {
   
   const newService = await res.json();
   return NextResponse.json(newService);
-} 
+}; 

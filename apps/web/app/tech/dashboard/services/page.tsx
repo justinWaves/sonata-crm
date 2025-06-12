@@ -93,7 +93,7 @@ export default function ServicesPage() {
       <h2 className="text-2xl font-bold mb-4">Services</h2>
       <div className="bg-white rounded shadow p-6">
         <button 
-          className="mb-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+          className="mb-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition cursor-pointer"
           onClick={handleAddNew}
         >
           Add New Service
@@ -122,7 +122,7 @@ export default function ServicesPage() {
                         setIsAdding(false);
                         setIsDeleting(false);
                       }}
-                      className="opacity-70 group-hover:opacity-100 hover:text-blue-600 transition"
+                      className="opacity-70 group-hover:opacity-100 hover:text-blue-600 transition cursor-pointer"
                     >
                       <PencilIcon />
                     </button>
@@ -196,7 +196,7 @@ export default function ServicesPage() {
               <div className="flex gap-2 mt-6">
                 <button 
                   type="button" 
-                  className="w-1/2 border border-gray-300 rounded py-2 hover:bg-gray-50 transition" 
+                  className="w-1/2 border border-gray-300 rounded py-2 hover:bg-gray-50 transition cursor-pointer" 
                   onClick={() => {
                     setEditing(null);
                     setIsAdding(false);
@@ -207,7 +207,7 @@ export default function ServicesPage() {
                 </button>
                 <button 
                   type="submit" 
-                  className="w-1/2 bg-blue-600 text-white rounded py-2 hover:bg-blue-700 transition"
+                  className="w-1/2 bg-blue-600 text-white rounded py-2 hover:bg-blue-700 transition cursor-pointer"
                 >
                   {isAdding ? 'Add Service' : 'Save Changes'}
                 </button>
@@ -218,7 +218,7 @@ export default function ServicesPage() {
                     <button
                       type="button"
                       onClick={() => setIsDeleting(true)}
-                      className="text-red-600 underline hover:text-red-700 transition"
+                      className="text-red-600 underline hover:text-red-700 transition cursor-pointer"
                     >
                       Delete Service
                     </button>
@@ -229,14 +229,14 @@ export default function ServicesPage() {
                         <button
                           type="button"
                           onClick={() => setIsDeleting(false)}
-                          className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 transition"
+                          className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 transition cursor-pointer"
                         >
                           Cancel
                         </button>
                         <button
                           type="button"
                           onClick={handleDelete}
-                          className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
+                          className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition cursor-pointer"
                         >
                           Yes, Delete
                         </button>

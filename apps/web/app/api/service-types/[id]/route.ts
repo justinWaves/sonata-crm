@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 
-export async function PUT(
+export const PUT = async (
   request: Request,
   { params }: { params: { id: string } }
-) {
+) => {
   const data = await request.json();
   const res = await fetch(`http://localhost:4000/service-types/${params.id}`, {
     method: 'PUT',
@@ -19,12 +19,12 @@ export async function PUT(
   
   const updatedService = await res.json();
   return NextResponse.json(updatedService);
-}
+};
 
-export async function DELETE(
+export const DELETE = async (
   request: Request,
   { params }: { params: { id: string } }
-) {
+) => {
   const res = await fetch(`http://localhost:4000/service-types/${params.id}`, {
     method: 'DELETE',
   });
@@ -34,4 +34,4 @@ export async function DELETE(
   }
   
   return NextResponse.json({ success: true });
-} 
+}; 
