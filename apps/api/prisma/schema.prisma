@@ -13,10 +13,12 @@ model Technician {
   lastName      String
   email         String   @unique
   phone         String
+  password      String
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   customMessage String?
   servicePrices Json? // e.g. { "Standard Tuning": 150, "Touch-Up": 100 }
+  serviceTypes  ServiceType[]
 
   customers    Customer[]
   services     Service[]
@@ -83,11 +85,15 @@ model Service {
 }
 
 model ServiceType {
-  id           String        @id @default(uuid())
-  name         String        @unique
-  description  String?
-  price        Int?
-  duration     String?
+  id           String   @id @default(cuid())
+  name         String
+  description  String
+  price        Float
+  duration     String
+  technicianId String
+  technician   Technician @relation(fields: [technicianId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
   services     Service[]
   appointments Appointment[]
 }

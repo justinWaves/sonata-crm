@@ -1,29 +1,42 @@
 import React from 'react';
 
-type ButtonProps = (
-  | (React.ButtonHTMLAttributes<HTMLButtonElement> & {
-      variant?: 'primary' | 'secondary';
-      as?: 'button';
-    })
-  | (React.AnchorHTMLAttributes<HTMLAnchorElement> & {
-      variant?: 'primary' | 'secondary';
-      as: 'a';
-      href: string;
-    })
-);
+type ButtonBaseProps = {
+  children: React.ReactNode;
+  variant?: 'primary' | 'secondary';
+  className?: string;
+};
 
-const Button: React.FC<ButtonProps> = (props) => {
-  const { variant = 'primary', className = '', as = 'button', ...rest } = props as any;
-  const base =
-    'px-4 py-2 rounded font-semibold transition ' +
-    (variant === 'secondary'
-      ? 'bg-white border border-black text-black hover:bg-gray-100'
-      : 'bg-blue-600 text-white hover:bg-blue-700');
+type ButtonAsButton = ButtonBaseProps & React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  as?: 'button';
+};
+
+type ButtonAsAnchor = ButtonBaseProps & React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+  as: 'a';
+};
+
+type ButtonProps = ButtonAsButton | ButtonAsAnchor;
+
+const Button = ({ children, variant = 'primary', className = '', as, ...props }: ButtonProps) => {
+  const Component = as || 'button';
+  const baseClassName = `px-4 py-2 rounded font-medium transition ${
+    variant === 'secondary' 
+      ? 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50' 
+      : 'bg-blue-600 text-white hover:bg-blue-700'
+  } ${className}`;
+
   if (as === 'a') {
-    const { href, ...anchorProps } = rest as React.AnchorHTMLAttributes<HTMLAnchorElement>;
-    return <a href={href} className={`${base} ${className}`} {...anchorProps} />;
+    return (
+      <a className={baseClassName} {...(props as React.AnchorHTMLAttributes<HTMLAnchorElement>)}>
+        {children}
+      </a>
+    );
   }
-  return <button className={`${base} ${className}`} {...(rest as React.ButtonHTMLAttributes<HTMLButtonElement>)} />;
+
+  return (
+    <button className={baseClassName} {...(props as React.ButtonHTMLAttributes<HTMLButtonElement>)}>
+      {children}
+    </button>
+  );
 };
 
 export default Button; 

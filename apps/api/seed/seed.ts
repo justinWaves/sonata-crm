@@ -10,6 +10,7 @@ async function main() {
       firstName: 'Justin Waves',
       lastName: 'Waves',
       email: 'justin@example.com',
+      password: '1234',
       phone: '555-1234',
       customMessage: 'Thank you for booking with Sonata Piano Works!',
       servicePrices: {
@@ -27,6 +28,7 @@ async function main() {
         firstName: 'Ron',
         lastName: 'Henderson',
         email: 'ron@example.com',
+        password: '1234',
         phone: '555-9876',
         customMessage: 'Looking forward to servicing your piano! - Ron',
         servicePrices: {
@@ -46,18 +48,19 @@ async function main() {
     ],
   });
 
-  // Create service types
-  await prisma.serviceType.createMany({
-    data: [
-      { name: 'Standard Tuning', description: 'Basic tuning service', price: 195, duration: '1.5 hr' },
-      { name: 'Touch-Up Tuning', description: 'Quick tuning after pitch adjustment', price: 120, duration: '1 hr' },
-      { name: 'Minor Repair', description: 'Fixes to small mechanical issues', price: 150, duration: '1 hr' },
-      { name: 'Major Repair', description: 'Larger repair tasks including action part replacements', price: 275, duration: '2 hr' },
-      { name: 'Lubrication', description: 'Lubricate moving parts for better feel and longevity', price: 60, duration: '0.5 hr' },
-    ],
-  });
+  // Create service types (assigning technicianId and updatedAt)
+  const serviceTypes = [
+    { name: 'Standard Tuning', description: 'Basic tuning service', price: 195, duration: '1.5 hr', technicianId: technician.id, updatedAt: new Date() },
+    { name: 'Touch-Up Tuning', description: 'Quick tuning after pitch adjustment', price: 120, duration: '1 hr', technicianId: technician.id, updatedAt: new Date() },
+    { name: 'Minor Repair', description: 'Fixes to small mechanical issues', price: 150, duration: '1 hr', technicianId: technician.id, updatedAt: new Date() },
+    { name: 'Major Repair', description: 'Larger repair tasks including action part replacements', price: 275, duration: '2 hr', technicianId: technician2.id, updatedAt: new Date() },
+    { name: 'Lubrication', description: 'Lubricate moving parts for better feel and longevity', price: 60, duration: '0.5 hr', technicianId: technician2.id, updatedAt: new Date() },
+  ];
+  for (const st of serviceTypes) {
+    await prisma.serviceType.create({ data: st });
+  }
 
-  const standardTuning = await prisma.serviceType.findUnique({
+  const standardTuning = await prisma.serviceType.findFirst({
     where: { name: 'Standard Tuning' },
   });
 

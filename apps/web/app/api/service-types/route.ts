@@ -1,19 +1,34 @@
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../auth/[...nextauth]/route';
 
 export const GET = async () => {
-  const res = await fetch('http://localhost:4000/service-types');
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const res = await fetch(`http://localhost:4000/service-types?technicianId=${session.user.id}`);
   const data = await res.json();
   return NextResponse.json(data);
 };
 
 export const POST = async (request: Request) => {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const data = await request.json();
   const res = await fetch('http://localhost:4000/service-types', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify({
+      ...data,
+      technicianId: session.user.id,
+    }),
   });
   
   if (!res.ok) {

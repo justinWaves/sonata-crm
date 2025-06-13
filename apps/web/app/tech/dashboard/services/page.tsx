@@ -1,23 +1,40 @@
 'use client';
 import { useState, useEffect } from 'react';
 import PencilIcon from '@/components/PencilIcon';
+import { useSession } from 'next-auth/react';
+
+interface ServiceType {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  duration: string;
+  technicianId: string;
+}
 
 export default function ServicesPage() {
-  const [services, setServices] = useState<any[]>([]);
+  const { data: session } = useSession();
+  const [services, setServices] = useState<ServiceType[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState<null | any>(null);
+  const [editing, setEditing] = useState<ServiceType | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    fetchServices();
-  }, []);
+    if (session?.user?.id) {
+      fetchServices();
+    }
+  }, [session]);
 
   const fetchServices = () => {
     fetch('/api/service-types')
       .then(res => res.json())
       .then(data => {
-        setServices(data);
+        // Filter services by the logged-in technician's ID
+        const filteredServices = data.filter((service: ServiceType) => 
+          service.technicianId === session?.user?.id
+        );
+        setServices(filteredServices);
         setLoading(false);
       });
   };
@@ -37,6 +54,7 @@ export default function ServicesPage() {
       description: formData.get('description'),
       price: parseFloat(formData.get('price') as string),
       duration: formData.get('duration'),
+      technicianId: session?.user?.id, // Add the technician ID to new services
     };
 
     try {
@@ -79,12 +97,15 @@ export default function ServicesPage() {
   };
 
   const handleAddNew = () => {
+    if (!session?.user?.id) return;
     setIsAdding(true);
     setEditing({
+      id: '',
       name: '',
       description: '',
-      price: '',
+      price: 0,
       duration: '',
+      technicianId: session.user.id,
     });
   };
 
@@ -154,8 +175,8 @@ export default function ServicesPage() {
                 <input 
                   name="name"
                   className="w-full border border-gray-300 rounded px-3 py-2" 
-                  value={editing.name} 
-                  onChange={(e) => setEditing({...editing, name: e.target.value})}
+                  value={editing!.name} 
+                  onChange={(e) => setEditing({...editing!, name: e.target.value})}
                   required
                 />
               </div>
@@ -164,8 +185,8 @@ export default function ServicesPage() {
                 <input 
                   name="description"
                   className="w-full border border-gray-300 rounded px-3 py-2" 
-                  value={editing.description} 
-                  onChange={(e) => setEditing({...editing, description: e.target.value})}
+                  value={editing!.description} 
+                  onChange={(e) => setEditing({...editing!, description: e.target.value})}
                   required
                 />
               </div>
@@ -177,8 +198,8 @@ export default function ServicesPage() {
                   step="0.01"
                   min="0"
                   className="w-full border border-gray-300 rounded px-3 py-2" 
-                  value={editing.price} 
-                  onChange={(e) => setEditing({...editing, price: e.target.value})}
+                  value={editing!.price} 
+                  onChange={(e) => setEditing({...editing!, price: parseFloat(e.target.value)})}
                   required
                 />
               </div>
@@ -187,8 +208,8 @@ export default function ServicesPage() {
                 <input 
                   name="duration"
                   className="w-full border border-gray-300 rounded px-3 py-2" 
-                  value={editing.duration} 
-                  onChange={(e) => setEditing({...editing, duration: e.target.value})}
+                  value={editing!.duration} 
+                  onChange={(e) => setEditing({...editing!, duration: e.target.value})}
                   placeholder="e.g., 1.5 hr"
                   required
                 />

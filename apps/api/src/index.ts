@@ -20,7 +20,12 @@ app.get('/customers', async (req, res) => {
 
 app.get('/service-types', async (req, res) => {
   try {
-    const serviceTypes = await prisma.serviceType.findMany();
+    const { technicianId } = req.query;
+    const serviceTypes = await prisma.serviceType.findMany({
+      where: technicianId ? {
+        technicianId: String(technicianId)
+      } : undefined
+    });
     res.json(serviceTypes);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch service types' });
@@ -29,13 +34,14 @@ app.get('/service-types', async (req, res) => {
 
 app.post('/service-types', async (req, res) => {
   try {
-    const { name, description, price, duration } = req.body;
+    const { name, description, price, duration, technicianId } = req.body;
     const serviceType = await prisma.serviceType.create({
       data: {
         name,
         description,
         price: Number(price),
         duration,
+        technicianId,
       },
     });
     res.json(serviceType);
@@ -48,7 +54,7 @@ app.post('/service-types', async (req, res) => {
 app.put('/service-types/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, description, price, duration } = req.body;
+    const { name, description, price, duration, technicianId } = req.body;
     const serviceType = await prisma.serviceType.update({
       where: { id },
       data: {
@@ -56,6 +62,7 @@ app.put('/service-types/:id', async (req, res) => {
         description,
         price: Number(price),
         duration,
+        technicianId,
       },
     });
     res.json(serviceType);

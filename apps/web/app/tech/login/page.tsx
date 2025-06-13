@@ -3,6 +3,7 @@ import Header from '@/components/Header';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { signIn } from 'next-auth/react';
 
 export default function TechLoginPage() {
   const router = useRouter();
@@ -21,23 +22,33 @@ export default function TechLoginPage() {
     setStep('password');
   };
 
-  const handlePasswordSubmit = (e: React.FormEvent) => {
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!password) {
       setError('Please enter your password.');
       return;
     }
     setError('');
-    // Simulate successful login
-    router.push('/tech/dashboard');
+    // Use next-auth signIn
+    const result = await signIn('credentials', {
+      redirect: false,
+      email,
+      password,
+    });
+    if (result?.ok) {
+      router.push('/tech/dashboard');
+    } else {
+      setError('Invalid email or password');
+    }
   };
 
   return (
-
-      <div className="flex flex-col items-center justify-center pb-40 bg-gray-50 min-h-screen">
+    <>
+      <Header />
+      <div className="flex flex-col items-center justify-center bg-gray-50 min-h-[calc(100vh-212px)]">
         <div className="flex flex-col items-center mb-4">
           <div className="w-14 h-14 mb-6 flex items-center justify-center">
-            <Image src="/sonata-logo.svg" alt="Sonata Logo" width={40} height={40} />
+            <Image src="/sonata-logo.svg" alt="Sonata Logo" width={56} height={56} />
           </div>
           <h1 className="text-2xl font-bold mb-4">Technicians Log In</h1>
         </div>
@@ -90,5 +101,6 @@ export default function TechLoginPage() {
           </div>
         </div>
       </div>
+    </>
   );
 } 

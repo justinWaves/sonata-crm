@@ -1,15 +1,12 @@
-import Link from 'next/link';
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../api/auth/[...nextauth]/route";
+import { redirect } from "next/navigation";
 
-const navItems = [
-  { label: 'Appointments', href: '#' },
-  { label: 'Availability', href: '#' },
-  { label: 'Customers', href: '#' },
-  { label: 'Services', href: '#' },
-  { label: 'Account', href: '#' },
-  { label: 'Log out', href: '#' },
-];
-
-export default function TechDashboardPage() {
+export default async function TechDashboardPage() {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    redirect("/tech/login");
+  }
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-56px)]">
       <div className="bg-white rounded shadow p-12 min-w-[400px] text-center">
