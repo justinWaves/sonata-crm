@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import PencilIcon from '@/components/PencilIcon';
 import { useSession } from 'next-auth/react';
 
@@ -20,24 +20,23 @@ export default function ServicesPage() {
   const [isAdding, setIsAdding] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  useEffect(() => {
-    if (session?.user?.id) {
-      fetchServices();
-    }
-  }, [session]);
-
-  const fetchServices = () => {
+  const fetchServices = useCallback(() => {
     fetch('/api/service-types')
       .then(res => res.json())
       .then(data => {
-        // Filter services by the logged-in technician's ID
         const filteredServices = data.filter((service: ServiceType) => 
           service.technicianId === session?.user?.id
         );
         setServices(filteredServices);
         setLoading(false);
       });
-  };
+  }, [session]);
+
+  useEffect(() => {
+    if (session?.user?.id) {
+      fetchServices();
+    }
+  }, [session, fetchServices]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {

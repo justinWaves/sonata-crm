@@ -4,7 +4,7 @@ import Header from '@/components/Header';
 import Link from 'next/link';
 import { signOut, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { SessionProvider } from 'next-auth/react';
+import Providers from '@/providers/Providers';
 import { useEffect } from 'react';
 
 const navItems = [
@@ -71,8 +71,8 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <SessionProvider>
+    <Providers>
       <DashboardContent>{children}</DashboardContent>
-    </SessionProvider>
+    </Providers>
   );
 } 

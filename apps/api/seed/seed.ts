@@ -12,6 +12,7 @@ async function main() {
       email: 'justin@example.com',
       password: '1234',
       phone: '555-1234',
+      websiteURL: 'https://sonatapianoworks.com',
       customMessage: 'Thank you for booking with Sonata Piano Works!',
       servicePrices: {
         "Standard Tuning": 195,
@@ -30,6 +31,7 @@ async function main() {
         email: 'ron@example.com',
         password: '1234',
         phone: '555-9876',
+        websiteURL: 'https://ronspiano.com',
         customMessage: 'Looking forward to servicing your piano! - Ron',
         servicePrices: {
           "Standard Tuning": 180,

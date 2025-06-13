@@ -4,4 +4,6 @@ const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLI
   <input ref={ref} {...props} />
 ));
 
+Input.displayName = 'Input';
+
 export default Input; 

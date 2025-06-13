@@ -17,7 +17,6 @@ type ButtonAsAnchor = ButtonBaseProps & React.AnchorHTMLAttributes<HTMLAnchorEle
 type ButtonProps = ButtonAsButton | ButtonAsAnchor;
 
 const Button = ({ children, variant = 'primary', className = '', as, ...props }: ButtonProps) => {
-  const Component = as || 'button';
   const baseClassName = `px-4 py-2 rounded font-medium transition ${
     variant === 'secondary' 
       ? 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50' 

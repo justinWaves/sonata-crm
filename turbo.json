@@ -18,5 +18,5 @@
       "persistent": true
     }
   },
-  "env": ["NODE_ENV"]
+  "globalEnv": ["NODE_ENV"]
 }
