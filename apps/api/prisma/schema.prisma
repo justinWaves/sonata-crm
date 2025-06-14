@@ -8,15 +8,22 @@ generator client {
 }
 
 model Technician {
-  id            String   @id @default(uuid())
+  id            String        @id @default(uuid())
   firstName     String
   lastName      String
-  email         String   @unique
+  email         String        @unique
   phone         String
   password      String
-  websiteURL       String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  websiteURL    String?
+  companyName   String?
+  address       String?
+  city          String?
+  state         String?
+  zipCode       String?
+  timezone      String?
+  currency      String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
   customMessage String?
   servicePrices Json? // e.g. { "Standard Tuning": 150, "Touch-Up": 100 }
   serviceTypes  ServiceType[]
@@ -38,8 +45,8 @@ model Customer {
   id             String        @id @default(uuid())
   techId         String
   tech           Technician    @relation(fields: [techId], references: [id])
-    firstName     String
-  lastName      String
+  firstName      String
+  lastName       String
   phone          String
   email          String?
   address        String
@@ -86,15 +93,15 @@ model Service {
 }
 
 model ServiceType {
-  id           String   @id @default(cuid())
+  id           String        @id @default(cuid())
   name         String
   description  String
   price        Float
   duration     String
   technicianId String
-  technician   Technician @relation(fields: [technicianId], references: [id])
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  technician   Technician    @relation(fields: [technicianId], references: [id])
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
   services     Service[]
   appointments Appointment[]
 }

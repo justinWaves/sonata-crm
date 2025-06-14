@@ -1,6 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
+import { Toaster } from 'react-hot-toast';
 
 const geist = Geist({ subsets: ["latin"] });
 
@@ -18,6 +19,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`bg-gray-50 ${geist.className}`}>
         {children}
+        <Toaster />
       </body>
     </html>
   );

@@ -9,10 +9,17 @@ async function main() {
     data: {
       firstName: 'Justin Waves',
       lastName: 'Waves',
-      email: 'justin@example.com',
+      email: 'juhstinn@gmail.com',
       password: '1234',
       phone: '555-1234',
       websiteURL: 'https://sonatapianoworks.com',
+      companyName: 'Sonata Piano Works',
+      address: '123 Piano St',
+      city: 'Santa Cruz',
+      state: 'CA',
+      zipCode: '95060',
+      timezone: 'America/Los_Angeles',
+      currency: 'USD',
       customMessage: 'Thank you for booking with Sonata Piano Works!',
       servicePrices: {
         "Standard Tuning": 195,
@@ -32,6 +39,13 @@ async function main() {
         password: '1234',
         phone: '555-9876',
         websiteURL: 'https://ronspiano.com',
+        companyName: "Ron's Piano Service",
+        address: '456 Music Ave',
+        city: 'Aptos',
+        state: 'CA',
+        zipCode: '95003',
+        timezone: 'America/Los_Angeles',
+        currency: 'USD',
         customMessage: 'Looking forward to servicing your piano! - Ron',
         servicePrices: {
           "Standard Tuning": 180,
@@ -45,8 +59,8 @@ async function main() {
   // Add some service areas for the technician
   await prisma.serviceArea.createMany({
     data: [
-      { zipCode: '95060', technicianId: technician.id },
-      { zipCode: '95062', technicianId: technician.id },
+      { zipCode: '95010', technicianId: technician2.id },
+      { zipCode: '95003', technicianId: technician2.id },
     ],
   });
 
