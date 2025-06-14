@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import PencilIcon from '@/components/PencilIcon';
 import { useSession } from 'next-auth/react';
+import { toast } from 'react-hot-toast';
 
 interface ServiceType {
   id: string;
@@ -20,16 +21,21 @@ export default function ServicesPage() {
   const [isAdding, setIsAdding] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const fetchServices = useCallback(() => {
-    fetch('/api/service-types')
-      .then(res => res.json())
-      .then(data => {
-        const filteredServices = data.filter((service: ServiceType) => 
-          service.technicianId === session?.user?.id
-        );
-        setServices(filteredServices);
-        setLoading(false);
-      });
+  const fetchServices = useCallback(async () => {
+    try {
+      const response = await fetch('/api/service-types');
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Failed to fetch services');
+      
+      const filteredServices = data.filter((service: ServiceType) => 
+        service.technicianId === session?.user?.id
+      );
+      setServices(filteredServices);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to fetch services');
+    } finally {
+      setLoading(false);
+    }
   }, [session]);
 
   useEffect(() => {
@@ -53,7 +59,7 @@ export default function ServicesPage() {
       description: formData.get('description'),
       price: parseFloat(formData.get('price') as string),
       duration: formData.get('duration'),
-      technicianId: session?.user?.id, // Add the technician ID to new services
+      technicianId: session?.user?.id,
     };
 
     try {
@@ -67,12 +73,13 @@ export default function ServicesPage() {
 
       if (!response.ok) throw new Error('Failed to save service');
       
-      fetchServices();
+      await fetchServices();
       setEditing(null);
       setIsAdding(false);
+      toast.success(editing?.id ? 'Service updated successfully' : 'Service added successfully');
     } catch (error) {
       console.error('Error saving service:', error);
-      alert('Failed to save service. Please try again.');
+      toast.error('Failed to save service. Please try again.');
     }
   };
 
@@ -86,12 +93,13 @@ export default function ServicesPage() {
 
       if (!response.ok) throw new Error('Failed to delete service');
       
-      fetchServices();
+      await fetchServices();
       setEditing(null);
       setIsDeleting(false);
+      toast.success('Service deleted successfully');
     } catch (error) {
       console.error('Error deleting service:', error);
-      alert('Failed to delete service. Please try again.');
+      toast.error('Failed to delete service. Please try again.');
     }
   };
 
@@ -108,164 +116,203 @@ export default function ServicesPage() {
     });
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-lg text-gray-600">Loading services...</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-8 min-w-2xl relative">
-      <h2 className="text-2xl font-bold mb-4">Services</h2>
-      <div className="bg-white rounded shadow p-6">
-        <button 
-          className="mb-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition cursor-pointer"
-          onClick={handleAddNew}
-        >
-          Add New Service
-        </button>
-        {loading ? (
-          <div className="text-center py-8 text-gray-400">Loading...</div>
-        ) : (
-          <table className="w-full text-left">
-            <thead>
-              <tr className="border-b">
-                <th></th>
-                <th className="py-2">Service</th>
-                <th className="py-2">Description</th>
-                <th className="py-2 text-center">Price</th>
-                <th className="py-2 text-right">Duration</th>
-              </tr>
-            </thead>
-            <tbody>
-              {services.map((service) => (
-                <tr key={service.id} className="group hover:bg-gray-50">
-                  <td className="pr-2 align-middle">
-                    <button
-                      aria-label="Edit"
-                      onClick={() => {
-                        setEditing(service);
-                        setIsAdding(false);
-                        setIsDeleting(false);
-                      }}
-                      className="opacity-70 group-hover:opacity-100 hover:text-blue-600 transition cursor-pointer"
-                    >
-                      <PencilIcon />
-                    </button>
-                  </td>
-                  <td className="py-2">{service.name}</td>
-                  <td className="py-2">{service.description}</td>
-                  <td className="py-2 text-right font-medium">{formatPrice(service.price)}</td>
-                  <td className="py-2 text-right">{service.duration}</td>
+    <div className="min-h-screen bg-gray-50 py-12 px-4">
+      <div className="max-w-7xl mx-auto">
+        <div className="bg-white rounded-2xl shadow-xl p-8">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Services</h2>
+            <p className="text-base text-gray-500">Manage your service offerings and pricing</p>
+          </div>
+
+          <div className="mb-6 flex justify-end">
+            <button 
+              onClick={handleAddNew}
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Add New Service
+            </button>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Service</th>
+                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Description</th>
+                  <th className="text-right py-4 px-6 text-sm font-semibold text-gray-600">Price</th>
+                  <th className="text-right py-4 px-6 text-sm font-semibold text-gray-600">Duration</th>
+                  <th className="text-right py-4 px-6 text-sm font-semibold text-gray-600">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+              </thead>
+              <tbody>
+                {services.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="text-center py-8 text-gray-500">
+                      No services found
+                    </td>
+                  </tr>
+                ) : (
+                  services.map((service) => (
+                    <tr 
+                      key={service.id}
+                      className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="py-4 px-6">
+                        <div className="text-sm font-medium text-gray-900">{service.name}</div>
+                      </td>
+                      <td className="py-4 px-6 text-sm text-gray-900">{service.description}</td>
+                      <td className="py-4 px-6 text-sm text-gray-900 text-right font-medium">
+                        {formatPrice(service.price)}
+                      </td>
+                      <td className="py-4 px-6 text-sm text-gray-900 text-right">{service.duration}</td>
+                      <td className="py-4 px-6 text-right">
+                        <button
+                          onClick={() => {
+                            setEditing(service);
+                            setIsAdding(false);
+                            setIsDeleting(false);
+                          }}
+                          className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                        >
+                          Edit
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       {/* Modal */}
       {(editing || isAdding) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => {
-            setEditing(null);
-            setIsAdding(false);
-            setIsDeleting(false);
-          }} />
-          <div className="relative bg-white rounded-lg shadow-lg p-8 w-full max-w-md z-10">
-            <h3 className="text-xl font-bold mb-4">{isAdding ? 'Add New Service' : 'Edit Service'}</h3>
-            <form onSubmit={handleSubmit} className="space-y-4">
+          <div 
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm" 
+            onClick={() => {
+              setEditing(null);
+              setIsAdding(false);
+              setIsDeleting(false);
+            }} 
+          />
+          <div className="relative bg-white rounded-2xl shadow-xl p-8 w-full max-w-md z-10">
+            <h3 className="text-xl font-bold text-gray-900 mb-6">
+              {isAdding ? 'Add New Service' : 'Edit Service'}
+            </h3>
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium mb-1">Service Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Service Name</label>
                 <input 
                   name="name"
-                  className="w-full border border-gray-300 rounded px-3 py-2" 
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
                   value={editing!.name} 
                   onChange={(e) => setEditing({...editing!, name: e.target.value})}
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Description</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
                 <input 
                   name="description"
-                  className="w-full border border-gray-300 rounded px-3 py-2" 
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
                   value={editing!.description} 
                   onChange={(e) => setEditing({...editing!, description: e.target.value})}
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Price</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Price</label>
                 <input 
                   name="price"
                   type="number"
                   step="0.01"
                   min="0"
-                  className="w-full border border-gray-300 rounded px-3 py-2" 
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
                   value={editing!.price} 
                   onChange={(e) => setEditing({...editing!, price: parseFloat(e.target.value)})}
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Duration</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Duration</label>
                 <input 
                   name="duration"
-                  className="w-full border border-gray-300 rounded px-3 py-2" 
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
                   value={editing!.duration} 
                   onChange={(e) => setEditing({...editing!, duration: e.target.value})}
-                  placeholder="e.g., 1.5 hr"
                   required
                 />
               </div>
-              <div className="flex gap-2 mt-6">
-                <button 
-                  type="button" 
-                  className="w-1/2 border border-gray-300 rounded py-2 hover:bg-gray-50 transition cursor-pointer" 
+              <div className="flex justify-end space-x-4 pt-4">
+                {editing?.id && (
+                  <button
+                    type="button"
+                    onClick={() => setIsDeleting(true)}
+                    className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-800"
+                  >
+                    Delete
+                  </button>
+                )}
+                <button
+                  type="button"
                   onClick={() => {
                     setEditing(null);
                     setIsAdding(false);
                     setIsDeleting(false);
                   }}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
                 >
                   Cancel
                 </button>
-                <button 
-                  type="submit" 
-                  className="w-1/2 bg-blue-600 text-white rounded py-2 hover:bg-blue-700 transition cursor-pointer"
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   {isAdding ? 'Add Service' : 'Save Changes'}
                 </button>
               </div>
-              {!isAdding && (
-                <div className="mt-4 text-center">
-                  {!isDeleting ? (
-                    <button
-                      type="button"
-                      onClick={() => setIsDeleting(true)}
-                      className="text-red-600 underline hover:text-red-700 transition cursor-pointer"
-                    >
-                      Delete Service
-                    </button>
-                  ) : (
-                    <div className="space-y-2">
-                      <p className="text-gray-600">Are you sure you want to delete this service?</p>
-                      <div className="flex gap-2 justify-center">
-                        <button
-                          type="button"
-                          onClick={() => setIsDeleting(false)}
-                          className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 transition cursor-pointer"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleDelete}
-                          className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition cursor-pointer"
-                        >
-                          Yes, Delete
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {isDeleting && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div 
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm" 
+            onClick={() => setIsDeleting(false)} 
+          />
+          <div className="relative bg-white rounded-2xl shadow-xl p-8 w-full max-w-md z-10">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Delete Service</h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete this service? This action cannot be undone.
+            </p>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setIsDeleting(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       )}

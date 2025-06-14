@@ -8,6 +8,7 @@ import Providers from '@/providers/Providers';
 import { useEffect } from 'react';
 
 const navItems = [
+  { label: 'Dashboard', href: '/tech/dashboard' },
   { label: 'Appointments', href: '/tech/dashboard/appointments' },
   { label: 'Availability', href: '/tech/dashboard/availability' },
   { label: 'Customers', href: '/tech/dashboard/customers' },

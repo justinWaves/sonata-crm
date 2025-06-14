@@ -32,6 +32,7 @@ model Technician {
   services     Service[]
   appointments Appointment[]
   serviceAreas ServiceArea[]
+  availability Availability[]
 }
 
 model ServiceArea {
@@ -124,4 +125,17 @@ model Appointment {
   timeSlot    String? // e.g. "Morning", "Afternoon", "Evening"
   notes       String?
   createdAt   DateTime @default(now())
+}
+
+model Availability {
+  id        String     @id @default(uuid())
+  dayOfWeek String
+  startTime String
+  endTime   String
+  techId    String
+  tech      Technician @relation(fields: [techId], references: [id])
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@unique([techId, dayOfWeek])
 }
