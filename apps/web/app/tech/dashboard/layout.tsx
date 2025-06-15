@@ -12,6 +12,7 @@ const navItems = [
   { label: 'Appointments', href: '/tech/dashboard/appointments' },
   { label: 'Availability', href: '/tech/dashboard/availability' },
   { label: 'Customers', href: '/tech/dashboard/customers' },
+  { label: 'Pianos', href: '/tech/dashboard/pianos' },
   { label: 'Services', href: '/tech/dashboard/services' },
   { label: 'Account', href: '/tech/dashboard/account' },
 ];
