@@ -33,5 +33,8 @@
     "tailwindcss": "^4.1.5",
     "typescript": "5.8.2",
     "@parcel/watcher": "^2.0.5"
+  },
+  "optionalDependencies": {
+    "@parcel/watcher": "^2.0.5"
   }
 }
