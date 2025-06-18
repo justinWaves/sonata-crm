@@ -1,38 +1,37 @@
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL") // not DB_URL
-}
-
 generator client {
   provider = "prisma-client-js"
 }
 
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
 model Technician {
-  id            String        @id @default(uuid())
+  id            String         @id @default(uuid())
+  email         String         @unique
+  phone         String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  customMessage String?
+  servicePrices Json?
   firstName     String
   lastName      String
-  email         String        @unique
-  phone         String
   password      String
   websiteURL    String?
-  companyName   String?
-  address       String?
   city          String?
-  state         String?
-  zipCode       String?
-  timezone      String?
+  companyName   String?
   currency      String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  customMessage String?
-  servicePrices Json? // e.g. { "Standard Tuning": 150, "Touch-Up": 100 }
+  state         String?
+  timezone      String?
+  zipCode       String?
+  address       String?
+  appointments  Appointment[]
+  availability  Availability[]
+  customers     Customer[]
+  services      Service[]
+  serviceAreas  ServiceArea[]
   serviceTypes  ServiceType[]
-
-  customers    Customer[]
-  services     Service[]
-  appointments Appointment[]
-  serviceAreas ServiceArea[]
-  availability Availability[]
 }
 
 model ServiceArea {
@@ -45,91 +44,83 @@ model ServiceArea {
 model Customer {
   id             String        @id @default(uuid())
   techId         String
-  tech           Technician    @relation(fields: [techId], references: [id])
-  firstName      String
-  lastName       String
-  companyName    String?
   phone          String
   email          String?
   address        String
+  referralCode   String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  firstName      String
+  lastName       String
+  companyName    String?
+  emailUpdates   Boolean       @default(true)
+  textUpdates    Boolean       @default(true)
   city           String?
   state          String?
   zipCode        String?
-  referralCode   String?
-  textUpdates    Boolean       @default(true)
-  emailUpdates    Boolean     @default(true)
+  appointments   Appointment[]
+  tech           Technician    @relation(fields: [techId], references: [id])
   pianos         Piano[]
   serviceHistory Service[]
-  appointments   Appointment[]
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
 }
 
 model Piano {
   id              String        @id @default(uuid())
   customerId      String
-  customer        Customer      @relation(fields: [customerId], references: [id])
   type            String
   brand           String?
-  year            Int?
   model           String?
   serialNumber    String?
   lastServiceDate DateTime?
   notes           String?
-  services        Service[]
+  year            Int?
   appointments    Appointment[]
+  customer        Customer      @relation(fields: [customerId], references: [id])
+  services        Service[]
 }
 
 model Service {
-  id     String     @id @default(uuid())
-  techId String
-  tech   Technician @relation(fields: [techId], references: [id])
-
-  pianoId String
-  piano   Piano  @relation(fields: [pianoId], references: [id])
-
-  customerId String
-  customer   Customer @relation(fields: [customerId], references: [id])
-
+  id            String      @id @default(uuid())
+  techId        String
+  pianoId       String
+  customerId    String
   serviceTypeId String
+  notes         String?
+  serviceDate   DateTime    @default(now())
+  customer      Customer    @relation(fields: [customerId], references: [id])
+  piano         Piano       @relation(fields: [pianoId], references: [id])
   serviceType   ServiceType @relation(fields: [serviceTypeId], references: [id])
-
-  notes       String?
-  serviceDate DateTime @default(now())
+  tech          Technician  @relation(fields: [techId], references: [id])
 }
 
 model ServiceType {
   id           String        @id @default(cuid())
   name         String
   description  String
-  price        Float
   duration     String
-  technicianId String
-  technician   Technician    @relation(fields: [technicianId], references: [id])
+  price        Float
   createdAt    DateTime      @default(now())
+  technicianId String
   updatedAt    DateTime      @updatedAt
-  services     Service[]
   appointments Appointment[]
+  services     Service[]
+  technician   Technician    @relation(fields: [technicianId], references: [id])
 }
 
 model Appointment {
-  id           String     @id @default(uuid())
-  technicianId String
-  technician   Technician @relation(fields: [technicianId], references: [id])
-
-  customerId String
-  customer   Customer @relation(fields: [customerId], references: [id])
-
-  pianoId String
-  piano   Piano  @relation(fields: [pianoId], references: [id])
-
+  id            String      @id @default(uuid())
+  technicianId  String
+  customerId    String
+  pianoId       String
   serviceTypeId String
+  scheduledAt   DateTime
+  timeSlot      String?
+  notes         String?
+  createdAt     DateTime    @default(now())
+  customer      Customer    @relation(fields: [customerId], references: [id])
+  piano         Piano       @relation(fields: [pianoId], references: [id])
   serviceType   ServiceType @relation(fields: [serviceTypeId], references: [id])
-
-  scheduledAt DateTime
-  timeSlot    String? // e.g. "Morning", "Afternoon", "Evening"
-  notes       String?
-  createdAt   DateTime @default(now())
+  technician    Technician  @relation(fields: [technicianId], references: [id])
 }
 
 model Availability {
@@ -138,9 +129,9 @@ model Availability {
   startTime String
   endTime   String
   techId    String
-  tech      Technician @relation(fields: [techId], references: [id])
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
+  tech      Technician @relation(fields: [techId], references: [id])
 
   @@unique([techId, dayOfWeek])
 }
