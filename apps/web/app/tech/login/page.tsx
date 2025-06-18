@@ -30,14 +30,17 @@ export default function TechLoginPage() {
     }
     setError('');
     // Use next-auth signIn
+    console.log('Attempting to sign in with:', { email, password });
     const result = await signIn('credentials', {
       redirect: false,
       email,
       password,
     });
+    console.log('Sign in result:', result);
     if (result?.ok) {
       router.push('/tech/dashboard');
     } else {
+      console.error('Sign in failed:', result);
       setError('Invalid email or password');
     }
   };
