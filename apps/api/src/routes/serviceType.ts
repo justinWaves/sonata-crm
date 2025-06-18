@@ -7,11 +7,14 @@ const prisma = new PrismaClient();
 router.get('/', async (req, res) => {
   try {
     const { technicianId } = req.query;
+    console.log('Fetching service types, technicianId:', technicianId);
     const serviceTypes = await prisma.serviceType.findMany({
       where: technicianId ? { technicianId: String(technicianId) } : undefined,
     });
+    console.log('Service types found:', serviceTypes.length);
     res.json(serviceTypes);
   } catch (err) {
+    console.error('Error fetching service types:', err);
     res.status(500).json({ error: 'Failed to fetch service types' });
   }
 });
