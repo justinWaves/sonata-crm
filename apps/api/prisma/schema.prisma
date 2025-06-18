@@ -48,11 +48,16 @@ model Customer {
   tech           Technician    @relation(fields: [techId], references: [id])
   firstName      String
   lastName       String
+  companyName    String?
   phone          String
   email          String?
   address        String
+  city           String?
+  state          String?
+  zipCode        String?
   referralCode   String?
-  wantUpdates    Boolean       @default(true)
+  textUpdates    Boolean       @default(true)
+  emailUpdates    Boolean     @default(true)
   pianos         Piano[]
   serviceHistory Service[]
   appointments   Appointment[]

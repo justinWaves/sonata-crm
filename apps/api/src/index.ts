@@ -4,6 +4,7 @@ import cors from 'cors';
 import serviceTypeRoutes from './routes/serviceType';
 import customerRoutes from './routes/customer';
 import technicianRoutes from './routes/technician';
+import pianoRoutes from './routes/piano';
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.use(express.json());
 app.use('/service-types', serviceTypeRoutes);
 app.use('/customers', customerRoutes);
 app.use('/technicians', technicianRoutes);
+app.use('/pianos', pianoRoutes);
 
 // Health check / root
 app.get('/', (req, res) => {

@@ -15,6 +15,9 @@ router.get('/', async (req, res) => {
     const customers = await prisma.customer.findMany({
       where: { techId: String(technicianId) },
       orderBy: { createdAt: 'desc' },
+      include: {
+        pianos: true
+      }
     });
     res.json(customers);
   } catch (err) {
@@ -32,7 +35,14 @@ router.post('/', async (req, res) => {
       email,
       phone,
       address,
+      city,
+      state,
+      zipCode,
       technicianId,
+      companyName,
+      textUpdates,
+      emailUpdates,
+      referralCode,
     } = req.body;
 
     const customer = await prisma.customer.create({
@@ -42,7 +52,14 @@ router.post('/', async (req, res) => {
         email,
         phone,
         address,
+        city,
+        state,
+        zipCode,
         techId: technicianId,
+        companyName,
+        textUpdates,
+        emailUpdates,
+        referralCode,
       },
     });
     res.json(customer);
@@ -62,6 +79,12 @@ router.put('/:id', async (req, res) => {
       email,
       phone,
       address,
+      city,
+      state,
+      zipCode,
+      companyName,
+      textUpdates,
+      emailUpdates,
     } = req.body;
 
     const customer = await prisma.customer.update({
@@ -72,6 +95,12 @@ router.put('/:id', async (req, res) => {
         email,
         phone,
         address,
+        city,
+        state,
+        zipCode,
+        companyName,
+        textUpdates,
+        emailUpdates,
       },
     });
     res.json(customer);
