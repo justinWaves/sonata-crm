@@ -24,5 +24,8 @@
   ],
   "overrides": {
     "@parcel/watcher": "2.1.0"
+  },
+  "optionalDependencies": {
+    "@parcel/watcher-linux-x64-glibc": "^2.1.0"
   }
 }
