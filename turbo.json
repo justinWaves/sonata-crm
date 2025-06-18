@@ -16,7 +16,8 @@
     "dev": {
       "cache": false,
       "persistent": true
-    }
+    },
+    "build:styles": "TAILWIND_MODE=build tailwindcss -i ./src/styles.css -o ./dist/index.css --minify"
   },
   "globalEnv": [
     "NODE_ENV",
