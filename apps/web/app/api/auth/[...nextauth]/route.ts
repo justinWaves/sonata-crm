@@ -20,6 +20,12 @@ const authOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
+        console.log('=== NextAuth authorize function called ===');
+        console.log('Environment variables check:');
+        console.log('- NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL);
+        console.log('- NEXTAUTH_SECRET:', process.env.NEXTAUTH_SECRET ? 'Set' : 'Not set');
+        console.log('- NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
+        
         if (!credentials?.email || !credentials?.password) {
           console.log('NextAuth: Missing credentials');
           return null;
