@@ -1,6 +1,5 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { prisma } from '@/lib/prisma';
 
 declare module "next-auth" {
   interface Session {
@@ -22,12 +21,15 @@ const authOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
-        const user = await prisma.technician.findUnique({
-          where: { email: credentials.email }
+        // Replace direct Prisma call with backend API call
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/technician/auth`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: credentials.email, password: credentials.password })
         });
+        if (!response.ok) return null;
+        const user = await response.json();
         if (!user) return null;
-        // For demo: plain text password check (replace with hash in production!)
-        if (user.password !== credentials.password) return null;
         return {
           id: user.id,
           email: user.email,

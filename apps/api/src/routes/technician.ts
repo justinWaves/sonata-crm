@@ -63,4 +63,25 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+// Add authentication endpoint
+router.post('/auth', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+    const user = await prisma.technician.findUnique({ where: { email } });
+    if (!user || user.password !== password) {
+      // In production, use hashed passwords!
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+    // Remove password before sending user object
+    const { password: _pw, ...userWithoutPassword } = user;
+    res.json(userWithoutPassword);
+  } catch (err) {
+    console.error('Error authenticating technician:', err);
+    res.status(500).json({ error: 'Failed to authenticate' });
+  }
+});
+
 export default router as Router; 
