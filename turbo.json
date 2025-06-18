@@ -18,7 +18,12 @@
       "persistent": true
     }
   },
-  "globalEnv": ["NODE_ENV"],
+  "globalEnv": [
+    "NODE_ENV",
+    "TAILWIND_WATCHER",
+    "NEXTAUTH_URL",
+    "NEXTAUTH_SECRET"
+  ],
   "env": {
     "TAILWIND_WATCHER": "@vercel/env",
     "NEXTAUTH_URL": "@vercel/env",
