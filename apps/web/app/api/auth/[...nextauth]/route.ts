@@ -22,7 +22,7 @@ const authOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
         // Replace direct Prisma call with backend API call
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/technician/auth`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/technicians/auth`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: credentials.email, password: credentials.password })
