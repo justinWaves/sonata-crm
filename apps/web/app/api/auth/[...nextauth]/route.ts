@@ -22,13 +22,21 @@ const authOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
         // Replace direct Prisma call with backend API call
+        console.log('NextAuth: Attempting to authenticate with:', { email: credentials.email, password: credentials.password });
+        console.log('NextAuth: API URL:', process.env.NEXT_PUBLIC_API_URL);
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/technicians/auth`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: credentials.email, password: credentials.password })
         });
-        if (!response.ok) return null;
+        console.log('NextAuth: Response status:', response.status);
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.log('NextAuth: Response error:', errorText);
+          return null;
+        }
         const user = await response.json();
+        console.log('NextAuth: User data received:', user);
         if (!user) return null;
         return {
           id: user.id,

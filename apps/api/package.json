@@ -23,8 +23,9 @@
   },
   "scripts": {
     "dev": "nodemon src/index.ts",
-    "build": "tsc",
+    "build": "npx prisma generate && tsc",
     "start": "node dist/index.js",
-    "seed": "ts-node seed/seed.ts"
+    "seed": "ts-node seed/seed.ts",
+    "postinstall": "npx prisma generate"
   }
 }
