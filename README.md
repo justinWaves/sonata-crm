@@ -26,28 +26,23 @@ sonata-crm/
 └── prisma/          # Database schema and migrations
 ```
 
-## 🛠️ Setup Instructions
+## 🛠️ Quick Start
 
 ### Prerequisites
 
 - Node.js 18+
-- npm or yarn
+- Make (for using Makefile scripts)
 - PostgreSQL database
 
-### 1. Clone the repository
+### 1. Clone and Setup
 
 ```bash
 git clone https://github.com/yourusername/sonata-crm.git
 cd sonata-crm
+make install
 ```
 
-### 2. Install dependencies
-
-```bash
-yarn install
-```
-
-### 3. Environment Setup
+### 2. Environment Setup
 
 #### Backend (API)
 1. Copy the example environment file:
@@ -72,38 +67,38 @@ yarn install
    NEXT_PUBLIC_API_URL="http://localhost:4000"
    ```
 
-### 4. Database Setup
+### 3. Database Setup
 
 ```bash
-cd apps/api
-npx prisma generate
-npx prisma db push
-npx prisma db seed
+make generate    # Generate Prisma client
+make migrate     # Run database migrations
+make seed        # Seed the database with sample data
 ```
 
-### 5. Run the development servers
+### 4. Start Development Servers
 
 ```bash
-# Terminal 1: Backend API
-cd apps/api
-yarn dev
-
-# Terminal 2: Frontend
-cd apps/web
-yarn dev
+make dev
 ```
 
-The application will be available at:
+This will start both the frontend and backend servers:
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:4000
 
-## 🔐 Authentication
-
-The application uses NextAuth.js for authentication. Default test credentials:
-- Email: `juhstinn@gmail.com`
-- Password: `1234`
-
 ## 📦 Available Scripts
+
+### Makefile Commands (Recommended)
+
+```bash
+make install     # Install dependencies for all apps
+make generate    # Generate Prisma client
+make seed        # Seed database with sample data
+make dev         # Start both frontend and backend in development
+make migrate     # Run database migrations
+make reset       # Reset database (drops all data and re-runs migrations)
+```
+
+### Manual Commands
 
 ```bash
 # Install dependencies
@@ -122,17 +117,52 @@ yarn lint
 yarn type-check
 ```
 
+## 🔐 Authentication
+
+The application uses NextAuth.js for authentication. Default test credentials:
+- Email: `juhstinn@gmail.com`
+- Password: `1234`
+
+## 🗄️ Database Management
+
+```bash
+# Generate Prisma client after schema changes
+make generate
+
+# Create and apply new migrations
+make migrate
+
+# Reset database (⚠️ This will delete all data)
+make reset
+
+# Seed database with sample data
+make seed
+```
+
 ## 🚀 Deployment
 
 ### Frontend (Vercel)
 1. Connect your GitHub repository to Vercel
-2. Set environment variables in Vercel dashboard
+2. Set environment variables in Vercel dashboard:
+   - `NEXTAUTH_SECRET`
+   - `NEXTAUTH_URL`
+   - `NEXT_PUBLIC_API_URL`
 3. Deploy automatically on push to main
 
 ### Backend (Railway)
 1. Connect your GitHub repository to Railway
-2. Set environment variables in Railway dashboard
+2. Set environment variables in Railway dashboard:
+   - `DATABASE_URL`
+   - `PORT`
 3. Deploy automatically on push to main
+
+## 🔧 Development Workflow
+
+1. **Start development**: `make dev`
+2. **Make changes** to your code
+3. **Database changes**: `make migrate`
+4. **Reset if needed**: `make reset && make seed`
+5. **Test your changes**
 
 ## 🤝 Contributing
 
