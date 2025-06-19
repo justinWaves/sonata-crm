@@ -1,58 +1,146 @@
-# Turborepo Tailwind CSS starter
+# Sonata CRM
 
-This Turborepo starter is maintained by the Turborepo core team.
+A modern booking and management system for piano technicians and their customers.
 
-## Using this example
+## 🎹 About
 
-Run the following command:
+Sonata CRM is a full-stack application built with Next.js, Express.js, and PostgreSQL. It provides piano technicians with tools to manage customers, appointments, and service records.
 
-```sh
-npx create-turbo@latest -e with-tailwind
+## 🚀 Tech Stack
+
+- **Frontend**: Next.js 14, TypeScript, Tailwind CSS
+- **Backend**: Express.js, TypeScript, Prisma ORM
+- **Database**: PostgreSQL
+- **Authentication**: NextAuth.js
+- **Deployment**: Vercel (Frontend), Railway (Backend & Database)
+- **Monorepo**: Turborepo
+
+## 📁 Project Structure
+
+```
+sonata-crm/
+├── apps/
+│   ├── web/          # Next.js frontend application
+│   └── api/          # Express.js backend API
+├── packages/         # Shared packages and configurations
+└── prisma/          # Database schema and migrations
 ```
 
-## What's inside?
+## 🛠️ Setup Instructions
 
-This Turborepo includes the following packages/apps:
+### Prerequisites
 
-### Apps and Packages
+- Node.js 18+
+- npm or yarn
+- PostgreSQL database
 
-- `docs`: a [Next.js](https://nextjs.org/) app with [Tailwind CSS](https://tailwindcss.com/)
-- `web`: another [Next.js](https://nextjs.org/) app with [Tailwind CSS](https://tailwindcss.com/)
-- `ui`: a stub React component library with [Tailwind CSS](https://tailwindcss.com/) shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+### 1. Clone the repository
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Building packages/ui
-
-This example is set up to produce compiled styles for `ui` components into the `dist` directory. The component `.tsx` files are consumed by the Next.js apps directly using `transpilePackages` in `next.config.ts`. This was chosen for several reasons:
-
-- Make sharing one `tailwind.config.ts` to apps and packages as easy as possible.
-- Make package compilation simple by only depending on the Next.js Compiler and `tailwindcss`.
-- Ensure Tailwind classes do not overwrite each other. The `ui` package uses a `ui-` prefix for it's classes.
-- Maintain clear package export boundaries.
-
-Another option is to consume `packages/ui` directly from source without building. If using this option, you will need to update the `tailwind.config.ts` in your apps to be aware of your package locations, so it can find all usages of the `tailwindcss` class names for CSS compilation.
-
-For example, in [tailwind.config.ts](packages/tailwind-config/tailwind.config.ts):
-
-```js
-  content: [
-    // app content
-    `src/**/*.{js,ts,jsx,tsx}`,
-    // include packages if not transpiling
-    "../../packages/ui/*.{js,ts,jsx,tsx}",
-  ],
+```bash
+git clone https://github.com/yourusername/sonata-crm.git
+cd sonata-crm
 ```
 
-If you choose this strategy, you can remove the `tailwindcss` and `autoprefixer` dependencies from the `ui` package.
+### 2. Install dependencies
 
-### Utilities
+```bash
+yarn install
+```
 
-This Turborepo has some additional tools already setup for you:
+### 3. Environment Setup
 
-- [Tailwind CSS](https://tailwindcss.com/) for styles
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+#### Backend (API)
+1. Copy the example environment file:
+   ```bash
+   cp apps/api/.env.example apps/api/.env
+   ```
+2. Update `apps/api/.env` with your database credentials:
+   ```
+   DATABASE_URL="postgresql://username:password@host:port/database_name"
+   PORT=4000
+   ```
+
+#### Frontend (Web)
+1. Copy the example environment file:
+   ```bash
+   cp apps/web/.env.example apps/web/.env
+   ```
+2. Update `apps/web/.env` with your configuration:
+   ```
+   NEXTAUTH_SECRET="your-secret-key-here"
+   NEXTAUTH_URL="http://localhost:3000"
+   NEXT_PUBLIC_API_URL="http://localhost:4000"
+   ```
+
+### 4. Database Setup
+
+```bash
+cd apps/api
+npx prisma generate
+npx prisma db push
+npx prisma db seed
+```
+
+### 5. Run the development servers
+
+```bash
+# Terminal 1: Backend API
+cd apps/api
+yarn dev
+
+# Terminal 2: Frontend
+cd apps/web
+yarn dev
+```
+
+The application will be available at:
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:4000
+
+## 🔐 Authentication
+
+The application uses NextAuth.js for authentication. Default test credentials:
+- Email: `juhstinn@gmail.com`
+- Password: `1234`
+
+## 📦 Available Scripts
+
+```bash
+# Install dependencies
+yarn install
+
+# Run development servers
+yarn dev
+
+# Build for production
+yarn build
+
+# Run linting
+yarn lint
+
+# Run type checking
+yarn type-check
+```
+
+## 🚀 Deployment
+
+### Frontend (Vercel)
+1. Connect your GitHub repository to Vercel
+2. Set environment variables in Vercel dashboard
+3. Deploy automatically on push to main
+
+### Backend (Railway)
+1. Connect your GitHub repository to Railway
+2. Set environment variables in Railway dashboard
+3. Deploy automatically on push to main
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License.
