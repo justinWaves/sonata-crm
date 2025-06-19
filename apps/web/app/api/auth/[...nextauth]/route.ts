@@ -20,54 +20,29 @@ const authOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        console.log('=== NextAuth authorize function called ===');
-        console.log('Environment variables check:');
-        console.log('- NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL);
-        console.log('- NEXTAUTH_SECRET:', process.env.NEXTAUTH_SECRET ? 'Set' : 'Not set');
-        console.log('- NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
-        
         if (!credentials?.email || !credentials?.password) {
-          console.log('NextAuth: Missing credentials');
           return null;
         }
-        // Replace direct Prisma call with backend API call
-        console.log('NextAuth: Attempting to authenticate with:', { email: credentials.email, password: credentials.password });
-        console.log('NextAuth: API URL:', process.env.NEXT_PUBLIC_API_URL);
-        
         const requestBody = { email: credentials.email, password: credentials.password };
-        console.log('NextAuth: Request body:', requestBody);
-        
         try {
           const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/technicians/auth`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(requestBody)
           });
-          console.log('NextAuth: Response status:', response.status);
-          console.log('NextAuth: Response headers:', Object.fromEntries(response.headers.entries()));
-          
           if (!response.ok) {
-            const errorText = await response.text();
-            console.log('NextAuth: Response error:', errorText);
             return null;
           }
-          
           const user = await response.json();
-          console.log('NextAuth: User data received:', user);
           if (!user) {
-            console.log('NextAuth: No user data received');
             return null;
           }
-          
-          const userObject = {
+          return {
             id: user.id,
             email: user.email,
             name: `${user.firstName} ${user.lastName}`,
           };
-          console.log('NextAuth: Returning user object:', userObject);
-          return userObject;
         } catch (error) {
-          console.error('NextAuth: Fetch error:', error);
           return null;
         }
       }
