@@ -10,7 +10,11 @@ export const PUT = async (
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify({
+      ...data,
+      serviceType: data.serviceType,
+      serviceTypeColor: data.serviceTypeColor,
+    }),
   });
   
   if (!res.ok) {

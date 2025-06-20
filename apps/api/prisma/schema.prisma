@@ -28,6 +28,8 @@ model Technician {
   address       String?
   defaultSlotDurationMinutes Int @default(60)
   defaultBufferMinutes       Int @default(15)
+  isPianoTechnician Boolean @default(false)
+  isMusicTeacher Boolean @default(false)
   appointments  Appointment[]
   availability  Availability[]
   customers     Customer[]
@@ -89,12 +91,12 @@ model Service {
   techId        String
   pianoId       String
   customerId    String
-  serviceTypeId String
+  serviceTypeId String?
   notes         String?
   serviceDate   DateTime    @default(now())
   customer      Customer    @relation(fields: [customerId], references: [id])
   piano         Piano       @relation(fields: [pianoId], references: [id])
-  serviceType   ServiceType @relation(fields: [serviceTypeId], references: [id])
+  serviceType   ServiceType? @relation(fields: [serviceTypeId], references: [id])
   tech          Technician  @relation(fields: [techId], references: [id])
 }
 
@@ -109,6 +111,8 @@ model ServiceType {
   updatedAt    DateTime      @updatedAt
   durationMinutes Int @default(60)
   bufferMinutes   Int @default(15)
+  serviceType  String
+  serviceTypeColor String
   appointments Appointment[]
   services     Service[]
   technician   Technician  @relation(fields: [technicianId], references: [id])
@@ -118,8 +122,8 @@ model Appointment {
   id            String      @id @default(uuid())
   technicianId  String
   customerId    String
-  pianoId       String
-  serviceTypeId String
+  pianoId       String?
+  serviceTypeId String?
   scheduledAt   DateTime
   notes         String?
   createdAt     DateTime    @default(now())
@@ -127,8 +131,8 @@ model Appointment {
   endTime       DateTime?
   status        AppointmentStatus @default(SCHEDULED)
   customer      Customer    @relation(fields: [customerId], references: [id])
-  piano         Piano       @relation(fields: [pianoId], references: [id])
-  serviceType   ServiceType @relation(fields: [serviceTypeId], references: [id])
+  piano         Piano?       @relation(fields: [pianoId], references: [id])
+  serviceType   ServiceType? @relation(fields: [serviceTypeId], references: [id])
   technician    Technician  @relation(fields: [technicianId], references: [id])
   timeSlot      TimeSlot?   @relation(fields: [timeSlotId], references: [id])
 }

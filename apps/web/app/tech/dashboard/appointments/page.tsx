@@ -16,7 +16,7 @@ interface Appointment {
     lastName: string;
     address: string;
   };
-  piano: {
+  piano?: {
     type: string;
     brand: string | null;
     model: string | null;
@@ -88,7 +88,6 @@ export default function AppointmentsPage() {
               <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Date & Time</th>
               <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Customer</th>
               <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Service</th>
-              <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Piano</th>
               <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Location</th>
               <th className="text-right py-4 px-6 text-sm font-semibold text-gray-600">Actions</th>
             </tr>
@@ -96,7 +95,7 @@ export default function AppointmentsPage() {
           <tbody>
             {appointments.length === 0 ? (
               <tr>
-                <td colSpan={6} className="text-center py-8 text-gray-500">
+                <td colSpan={5} className="text-center py-8 text-gray-500">
                   No appointments found
                 </td>
               </tr>
@@ -125,14 +124,6 @@ export default function AppointmentsPage() {
                     </div>
                     <div className="text-sm text-gray-500">
                       {appointment.serviceType.duration}
-                    </div>
-                  </td>
-                  <td className="py-4 px-6">
-                    <div className="text-sm font-medium text-gray-900">
-                      {appointment.piano.type}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {appointment.piano.brand} {appointment.piano.model}
                     </div>
                   </td>
                   <td className="py-4 px-6">
