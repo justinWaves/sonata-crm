@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { WeeklySchedule } from './EditTimeBlockModal';
 
 interface AddTimeBlockModalProps {
@@ -23,6 +24,11 @@ export const AddTimeBlockModal: React.FC<AddTimeBlockModalProps> = ({
     dayOfWeek,
     isAvailable: true,
   });
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     // Reset when modal is opened for a new day
@@ -35,7 +41,7 @@ export const AddTimeBlockModal: React.FC<AddTimeBlockModalProps> = ({
     });
   }, [isOpen, dayOfWeek]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !isClient) return null;
 
   const handleSave = () => {
     onSave(newSchedule);
@@ -46,7 +52,7 @@ export const AddTimeBlockModal: React.FC<AddTimeBlockModalProps> = ({
     setNewSchedule(prev => ({ ...prev, [name]: value }));
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-8 w-full max-w-md">
         <h2 className="text-2xl font-bold mb-6">Add Time Slot</h2>
@@ -93,6 +99,7 @@ export const AddTimeBlockModal: React.FC<AddTimeBlockModalProps> = ({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }; 

@@ -7,6 +7,8 @@ import technicianRoutes from './routes/technician';
 import pianoRoutes from './routes/piano';
 import availabilityRoutes from './routes/availability';
 import scheduleExceptionsRoutes from './routes/scheduleExceptions';
+import serviceTypeCategoryRoutes from './routes/serviceTypeCategory';
+import appointmentRoutes from './routes/appointment';
 import { PrismaClient } from '@prisma/client';
 
 const app = express();
@@ -17,10 +19,12 @@ app.use(cors());
 app.use(express.json());
 
 // API Routes
-app.use('/service-types', serviceTypeRoutes);
-app.use('/customers', customerRoutes);
 app.use('/technicians', technicianRoutes);
+app.use('/customers', customerRoutes);
 app.use('/pianos', pianoRoutes);
+app.use('/service-types', serviceTypeRoutes);
+app.use('/service-type-categories', serviceTypeCategoryRoutes);
+app.use('/appointments', appointmentRoutes);
 app.use('/availability', availabilityRoutes);
 app.use('/schedule-exceptions', scheduleExceptionsRoutes);
 

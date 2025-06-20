@@ -4,13 +4,15 @@ const prisma = new PrismaClient();
 console.log('Seeding started');
 
 async function main() {
+  const defaultPassword = '1234';
+
   // Create a technician with custom message and service prices
   const technician = await prisma.technician.create({
     data: {
       firstName: 'Justin Waves',
       lastName: 'Waves',
       email: 'juhstinn@gmail.com',
-      password: '1234',
+      password: defaultPassword,
       phone: '555-1234',
       websiteURL: 'https://sonatapianoworks.com',
       companyName: 'Sonata Piano Works',
@@ -21,6 +23,8 @@ async function main() {
       timezone: 'America/Los_Angeles',
       currency: 'USD',
       customMessage: 'Thank you for booking with Sonata Piano Works!',
+      isPianoTechnician: true,
+      isMusicTeacher: false,
       servicePrices: {
         "Standard Tuning": 195,
         "Touch-Up Tuning": 120,
@@ -30,47 +34,73 @@ async function main() {
     },
   });
 
-    // --- Second Technician: Ron Henderson ---
-    const technician2 = await prisma.technician.create({
-      data: {
-        firstName: 'Ron',
-        lastName: 'Henderson',
-        email: 'ron@example.com',
-        password: '1234',
-        phone: '555-9876',
-        websiteURL: 'https://ronspiano.com',
-        companyName: "Ron's Piano Service",
-        address: '456 Music Ave',
-        city: 'Aptos',
-        state: 'CA',
-        zipCode: '95003',
-        timezone: 'America/Los_Angeles',
-        currency: 'USD',
-        customMessage: 'Looking forward to servicing your piano! - Ron',
-        servicePrices: {
-          "Standard Tuning": 180,
-          "Touch-Up Tuning": 110,
-          "Minor Repair": 140,
-          "Major Repair": 260
-        },
+  // --- Third Technician: Music Teacher ---
+  const musicTeacher = await prisma.technician.create({
+    data: {
+      firstName: 'Melody',
+      lastName: 'Harmony',
+      email: 'melody@example.com',
+      password: defaultPassword,
+      phone: '555-5555',
+      companyName: 'Harmony Music School',
+      address: '789 Cadence Ct',
+      city: 'Capitola',
+      state: 'CA',
+      zipCode: '95010',
+      timezone: 'America/Los_Angeles',
+      currency: 'USD',
+      customMessage: 'Excited for our lesson!',
+      isPianoTechnician: false,
+      isMusicTeacher: true,
+    },
+  });
+
+  // --- Second Technician: Ron Henderson ---
+  const technician2 = await prisma.technician.create({
+    data: {
+      firstName: 'Ron',
+      lastName: 'Henderson',
+      email: 'ron@example.com',
+      password: defaultPassword,
+      phone: '555-9876',
+      websiteURL: 'https://ronspiano.com',
+      companyName: "Ron's Piano Service",
+      address: '456 Music Ave',
+      city: 'Aptos',
+      state: 'CA',
+      zipCode: '95003',
+      timezone: 'America/Los_Angeles',
+      currency: 'USD',
+      customMessage: 'Looking forward to servicing your piano! - Ron',
+      isPianoTechnician: true,
+      isMusicTeacher: false,
+      servicePrices: {
+        "Standard Tuning": 180,
+        "Touch-Up Tuning": 110,
+        "Minor Repair": 140,
+        "Major Repair": 260
       },
-    });
+    },
+  });
 
   // Add some service areas for the technician
   await prisma.serviceArea.createMany({
     data: [
       { zipCode: '95010', technicianId: technician2.id },
       { zipCode: '95003', technicianId: technician2.id },
+      { zipCode: '95010', technicianId: musicTeacher.id },
     ],
   });
 
   // Create service types (assigning technicianId and updatedAt)
   const serviceTypes = [
-    { name: 'Standard Tuning', description: 'Basic tuning service', price: 195, duration: '1.5 hr', durationMinutes: 90, bufferMinutes: 15, technicianId: technician.id, updatedAt: new Date() },
-    { name: 'Touch-Up Tuning', description: 'Quick tuning after pitch adjustment', price: 120, duration: '1 hr', durationMinutes: 60, bufferMinutes: 10, technicianId: technician.id, updatedAt: new Date() },
-    { name: 'Minor Repair', description: 'Fixes to small mechanical issues', price: 150, duration: '1 hr', durationMinutes: 60, bufferMinutes: 15, technicianId: technician.id, updatedAt: new Date() },
-    { name: 'Major Repair', description: 'Larger repair tasks including action part replacements', price: 275, duration: '2 hr', durationMinutes: 120, bufferMinutes: 30, technicianId: technician2.id, updatedAt: new Date() },
-    { name: 'Lubrication', description: 'Lubricate moving parts for better feel and longevity', price: 60, duration: '0.5 hr', durationMinutes: 30, bufferMinutes: 5, technicianId: technician2.id, updatedAt: new Date() },
+    { name: 'Standard Tuning', description: 'Basic tuning service', price: 195, duration: '1.5 hr', durationMinutes: 90, bufferMinutes: 15, technicianId: technician.id, updatedAt: new Date(), serviceType: 'Tuning', serviceTypeColor: '#a78bfa' },
+    { name: 'Touch-Up Tuning', description: 'Quick tuning after pitch adjustment', price: 120, duration: '1 hr', durationMinutes: 60, bufferMinutes: 10, technicianId: technician.id, updatedAt: new Date(), serviceType: 'Tuning', serviceTypeColor: '#a78bfa' },
+    { name: 'Minor Repair', description: 'Fixes to small mechanical issues', price: 150, duration: '1 hr', durationMinutes: 60, bufferMinutes: 15, technicianId: technician.id, updatedAt: new Date(), serviceType: 'Repair', serviceTypeColor: '#fbbf24' },
+    { name: 'Major Repair', description: 'Larger repair tasks including action part replacements', price: 275, duration: '2 hr', durationMinutes: 120, bufferMinutes: 30, technicianId: technician2.id, updatedAt: new Date(), serviceType: 'Repair', serviceTypeColor: '#fbbf24' },
+    { name: 'Lubrication', description: 'Lubricate moving parts for better feel and longevity', price: 60, duration: '0.5 hr', durationMinutes: 30, bufferMinutes: 5, technicianId: technician2.id, updatedAt: new Date(), serviceType: 'Repair', serviceTypeColor: '#fbbf24' },
+    { name: 'Piano Lesson', description: '30-minute piano lesson', price: 50, duration: '0.5 hr', durationMinutes: 30, bufferMinutes: 5, technicianId: musicTeacher.id, updatedAt: new Date(), serviceType: 'Lesson', serviceTypeColor: '#34d399' },
+    { name: 'Guitar Lesson', description: '45-minute guitar lesson', price: 65, duration: '0.75 hr', durationMinutes: 45, bufferMinutes: 5, technicianId: musicTeacher.id, updatedAt: new Date(), serviceType: 'Lesson', serviceTypeColor: '#f87171' },
   ];
   for (const st of serviceTypes) {
     await prisma.serviceType.create({ data: st });
@@ -80,8 +110,12 @@ async function main() {
     where: { name: 'Standard Tuning' },
   });
 
-  if (!standardTuning) {
-    throw new Error('Standard Tuning service type not found');
+  const pianoLesson = await prisma.serviceType.findFirst({
+    where: { name: 'Piano Lesson' },
+  });
+
+  if (!standardTuning || !pianoLesson) {
+    throw new Error('Required service types not found');
   }
 
   // Create a customer for Justin Waves
@@ -140,14 +174,42 @@ async function main() {
     },
   });
 
+  // Create a customer (student) for Melody Harmony
+  const student = await prisma.customer.create({
+    data: {
+      techId: musicTeacher.id,
+      firstName: 'Alex',
+      lastName: 'Rhythm',
+      phone: '555-2468',
+      email: 'alex@example.com',
+      address: '101 Tempo Lane',
+      city: 'Capitola',
+      state: 'CA',
+      zipCode: '95010',
+      textUpdates: true,
+      emailUpdates: true,
+    },
+  });
+
+  // Create an upcoming appointment (lesson) for Alex
+  await prisma.appointment.create({
+    data: {
+      technicianId: musicTeacher.id,
+      customerId: student.id,
+      serviceTypeId: pianoLesson.id,
+      scheduledAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // 7 days from now
+      notes: 'First lesson, focus on basic scales.',
+    },
+  });
+
   // Clear existing weekly schedules to prevent duplicates during re-seeding
   await prisma.weeklySchedule.deleteMany({});
 
   // Define the time blocks
   const timeBlocks = [
-    { blockName: 'Morning', startTime: '09:00', endTime: '12:00' },
-    { blockName: 'Afternoon', startTime: '13:00', endTime: '17:00' },
-    { blockName: 'Evening', startTime: '18:00', endTime: '20:00' },
+    { blockName: 'Morning', startTime: '09:00', endTime: '11:00' },
+    { blockName: 'Afternoon', startTime: '12:30', endTime: '16:30' },
+    { blockName: 'Evening', startTime: '17:00', endTime: '19:00' },
   ];
 
   // Create schedules for Monday to Friday (available)

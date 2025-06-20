@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 // This interface should ideally be in a shared types file
 export interface WeeklySchedule {
@@ -29,12 +30,17 @@ export const EditTimeBlockModal: React.FC<EditTimeBlockModalProps> = ({
   onDelete,
 }) => {
   const [editedSchedule, setEditedSchedule] = useState<WeeklySchedule | null>(null);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     setEditedSchedule(schedule);
   }, [schedule]);
 
-  if (!isOpen || !editedSchedule) return null;
+  if (!isOpen || !editedSchedule || !isClient) return null;
 
   const handleSave = () => {
     if (editedSchedule) {
@@ -60,7 +66,7 @@ export const EditTimeBlockModal: React.FC<EditTimeBlockModalProps> = ({
     });
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-8 w-full max-w-md">
         <h2 className="text-2xl font-bold mb-6">Edit Time Slot</h2>
@@ -112,6 +118,7 @@ export const EditTimeBlockModal: React.FC<EditTimeBlockModalProps> = ({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }; 

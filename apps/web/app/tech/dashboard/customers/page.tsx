@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { useReferralCode } from '../../../hooks/useReferralCode';
+import { createPortal } from 'react-dom';
 
 interface Piano {
   id: string;
@@ -357,95 +358,86 @@ export default function CustomersPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-lg text-gray-600">Loading customers...</div>
-      </div>
+      <div className="text-lg text-gray-600">Loading customers...</div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
-      <div className="max-w-7xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Customers</h2>
-            <p className="text-base text-gray-500">Manage your customers and their pianos</p>
-          </div>
+    <>
+      <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Customers</h2>
+          <p className="text-base text-gray-500">View and manage your customers</p>
+        </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Name</th>
-                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Phone</th>
-                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Email</th>
-                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Address</th>
-                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Pianos</th>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-200">
+                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Name</th>
+                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Phone</th>
+                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Email</th>
+                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Address</th>
+                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Pianos</th>
+              </tr>
+            </thead>
+            <tbody>
+              {customers.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="text-center py-8 text-gray-500">
+                    No customers found
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {customers.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="text-center py-8 text-gray-500">
-                      No customers found
+              ) : (
+                customers.map((customer) => (
+                  <tr 
+                    key={customer.id}
+                    className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+                    onClick={() => openPianoModal(customer)}
+                  >
+                    <td className="py-4 px-6">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold">
+                          {customer.firstName[0]}{customer.lastName[0]}
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">
+                            {customer.firstName} {customer.lastName}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-4 px-6 text-sm text-gray-900">{customer.phone}</td>
+                    <td className="py-4 px-6 text-sm text-gray-900">{customer.email || '-'}</td>
+                    <td className="py-4 px-6 text-sm text-gray-900">
+                      {[customer.address, customer.city, customer.state, customer.zipCode].filter(Boolean).join(', ')}
+                    </td>
+                    <td className="py-4 px-6">
+                      <div className="text-sm text-gray-900">
+                        {(customer.pianos || []).length} Piano{(customer.pianos || []).length !== 1 ? 's' : ''}
+                      </div>
                     </td>
                   </tr>
-                ) : (
-                  customers.map((customer) => (
-                    <tr 
-                      key={customer.id}
-                      className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
-                      onClick={() => openPianoModal(customer)}
-                    >
-                      <td className="py-4 px-6">
-                        <div className="flex items-center">
-                          <div className="w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold">
-                            {customer.firstName[0]}{customer.lastName[0]}
-                          </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">
-                              {customer.firstName} {customer.lastName}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6 text-sm text-gray-900">{customer.phone}</td>
-                      <td className="py-4 px-6 text-sm text-gray-900">{customer.email || '-'}</td>
-                      <td className="py-4 px-6 text-sm text-gray-900">
-                        {[customer.address, customer.city, customer.state, customer.zipCode].filter(Boolean).join(', ')}
-                      </td>
-                      <td className="py-4 px-6">
-                        <div className="text-sm text-gray-900">
-                          {(customer.pianos || []).length} Piano{(customer.pianos || []).length !== 1 ? 's' : ''}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
 
-          <div className="mt-6 flex justify-end">
-            <button
-              onClick={() => setIsAddModalOpen(true)}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              Add Customer
-            </button>
-          </div>
+        <div className="mt-6 flex justify-end">
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Add Customer
+          </button>
         </div>
       </div>
 
-      {/* Customer Modal */}
-      {isModalOpen && selectedCustomer && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div 
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm" 
-            onClick={closeModal}
-          />
-          <div className="relative bg-white rounded-2xl shadow-xl p-8 w-full max-w-2xl z-10">
-            <div className="flex justify-between items-start mb-6">
+      {isModalOpen && selectedCustomer && createPortal(
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="relative bg-white rounded-2xl shadow-xl p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-6">
               <div className="flex items-center space-x-4">
                 <div className="w-16 h-16 min-w-[4rem] min-h-[4rem] rounded-full bg-blue-100 flex items-center justify-center text-2xl text-blue-600 font-bold">
                   {selectedCustomer.firstName[0]}{selectedCustomer.lastName[0]}
@@ -542,16 +534,15 @@ export default function CustomersPage() {
               )}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {/* Add Customer Modal */}
-      {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsAddModalOpen(false)} />
-          <div className="relative bg-white rounded-2xl shadow-xl p-8 w-full max-w-lg z-10">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">Add Customer</h3>
-            <form className="space-y-4">
+      {isAddModalOpen && createPortal(
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="relative bg-white rounded-2xl shadow-xl p-8 w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">Add New Customer</h3>
+            <div className="space-y-4">
               <div className="flex gap-2">
                 <div className="w-1/2">
                   <label className="block text-sm font-medium mb-1 text-gray-700">First Name</label>
@@ -610,30 +601,17 @@ export default function CustomersPage() {
                 <button type="button" onClick={() => setIsAddModalOpen(false)} className="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 font-medium shadow-sm">Cancel</button>
                 <button type="button" onClick={handleAddCustomer} className="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium shadow-sm hover:bg-blue-700">Save</button>
               </div>
-            </form>
+            </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {/* Edit Customer Modal */}
-      {isEditModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsEditModalOpen(false)} />
-          <div className="relative bg-white rounded-2xl shadow-xl p-8 w-full max-w-lg z-10">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-gray-900">Edit Customer</h3>
-              <button
-                type="button"
-                onClick={() => setIsEditModalOpen(false)}
-                className="text-gray-400 hover:text-gray-500 ml-4"
-              >
-                <span className="sr-only">Close</span>
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <form className="w-full space-y-4">
+      {isEditModalOpen && editForm.id && createPortal(
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="relative bg-white rounded-2xl shadow-xl p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">Edit Customer</h3>
+            <div className="space-y-4">
               <div className="flex gap-2">
                 <div className="w-1/2">
                   <label className="block text-sm font-medium mb-1 text-gray-700">First Name</label>
@@ -713,15 +691,14 @@ export default function CustomersPage() {
                   Save
                 </button>
               </div>
-            </form>
+            </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowDeleteConfirm(false)} />
+      {showDeleteConfirm && createPortal(
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="relative bg-white rounded-2xl shadow-xl p-8 w-full max-w-sm z-10 flex flex-col items-center">
             <h3 className="text-lg font-bold text-gray-900 mb-4">Are you sure?</h3>
             <p className="text-gray-600 mb-6 text-center">This will permanently delete the customer and all associated pianos and appointments.</p>
@@ -743,28 +720,15 @@ export default function CustomersPage() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {/* Add Piano Modal */}
-      {isAddPianoModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsAddPianoModalOpen(false)} />
-          <div className="relative bg-white rounded-2xl shadow-xl p-8 w-full max-w-lg z-10">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-gray-900">Add Piano</h3>
-              <button
-                type="button"
-                onClick={() => setIsAddPianoModalOpen(false)}
-                className="text-gray-400 hover:text-gray-500 ml-4"
-              >
-                <span className="sr-only">Close</span>
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <form className="w-full space-y-4">
+      {isAddPianoModalOpen && createPortal(
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="relative bg-white rounded-2xl shadow-xl p-8 w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">Add Piano for {selectedCustomer?.firstName} {selectedCustomer?.lastName}</h3>
+            <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1 text-gray-700">Type <span className="text-red-500">*</span></label>
                 <select
@@ -818,30 +782,17 @@ export default function CustomersPage() {
                 <button type="button" onClick={() => setIsAddPianoModalOpen(false)} className="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 font-medium shadow-sm">Cancel</button>
                 <button type="button" onClick={handleAddPiano} className="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium shadow-sm hover:bg-blue-700">Save</button>
               </div>
-            </form>
+            </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {/* Edit Piano Modal */}
-      {isEditPianoModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsEditPianoModalOpen(false)} />
-          <div className="relative bg-white rounded-2xl shadow-xl p-8 w-full max-w-lg z-10">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-gray-900">Edit Piano</h3>
-              <button
-                type="button"
-                onClick={() => setIsEditPianoModalOpen(false)}
-                className="text-gray-400 hover:text-gray-500 ml-4"
-              >
-                <span className="sr-only">Close</span>
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <form className="w-full space-y-4">
+      {isEditPianoModalOpen && editPianoForm.id && createPortal(
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="relative bg-white rounded-2xl shadow-xl p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">Edit Piano</h3>
+            <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1 text-gray-700">Type <span className="text-red-500">*</span></label>
                 <select
@@ -915,15 +866,14 @@ export default function CustomersPage() {
                   Save
                 </button>
               </div>
-            </form>
+            </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {/* Delete Piano Confirmation Modal */}
-      {showDeletePianoConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowDeletePianoConfirm(false)} />
+      {showDeletePianoConfirm && createPortal(
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="relative bg-white rounded-2xl shadow-xl p-8 w-full max-w-sm z-10 flex flex-col items-center">
             <h3 className="text-lg font-bold text-gray-900 mb-4">Are you sure?</h3>
             <p className="text-gray-600 mb-6 text-center">This will permanently delete this piano and all associated service records.</p>
@@ -945,8 +895,9 @@ export default function CustomersPage() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
-    </div>
+    </>
   );
 } 
