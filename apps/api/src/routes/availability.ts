@@ -46,7 +46,7 @@ router.put('/', async (req, res) => {
       data: scheduleData.map(data => ({
         dayOfWeek: data.dayOfWeek,
         startTime: data.startTime,
-        duration: data.duration,
+        endTime: data.endTime,
         blockName: data.blockName,
         isAvailable: data.isAvailable,
         technicianId: String(data.technicianId),

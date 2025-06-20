@@ -151,7 +151,7 @@ model WeeklySchedule {
   technicianId  String
   dayOfWeek     Int
   startTime     String
-  duration      Int // Duration in minutes
+  endTime       String
   blockName     String
   isAvailable   Boolean    @default(true)
   createdAt     DateTime   @default(now())

@@ -2,7 +2,11 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
+import { SunIcon } from '@/components/SunIcon';
+import { MoonIcon } from '@/components/MoonIcon';
+import { EditTimeBlockModal, WeeklySchedule } from '@/components/EditTimeBlockModal';
 
+/*
 interface WeeklySchedule {
   id: string;
   technicianId: string;
@@ -12,6 +16,7 @@ interface WeeklySchedule {
   blockName: string;
   isAvailable: boolean;
 }
+*/
 
 interface ScheduleException {
   id: string;
@@ -53,6 +58,9 @@ export default function AvailabilityPage() {
   const [scheduleExceptions, setScheduleExceptions] = useState<ScheduleException[]>([]);
   const [technician, setTechnician] = useState<Technician | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isDirty, setIsDirty] = useState(false);
+  const [editingSchedule, setEditingSchedule] = useState<WeeklySchedule | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [showExceptionForm, setShowExceptionForm] = useState(false);
   const [newException, setNewException] = useState({
     date: '',
@@ -154,6 +162,87 @@ export default function AvailabilityPage() {
     }
   };
 
+  const handleAvailabilityToggle = (dayOfWeek: number, isChecked: boolean) => {
+    const schedulesForDay = weeklySchedule.filter(s => s.dayOfWeek === dayOfWeek);
+    let updatedSchedules = [...weeklySchedule];
+
+    if (isChecked) {
+      if (schedulesForDay.length === 0) {
+        // If no schedules exist, add a default one.
+        const newBlock = {
+          id: `temp-${Date.now()}`, // Temp ID for React key
+          technicianId: session?.user?.id || '',
+          dayOfWeek,
+          isAvailable: true,
+          blockName: 'Morning',
+          startTime: '09:00',
+          endTime: '12:00',
+        };
+        updatedSchedules = [...updatedSchedules, newBlock];
+      } else {
+        // Otherwise, mark all existing schedules as available
+        updatedSchedules = weeklySchedule.map(schedule => 
+          schedule.dayOfWeek === dayOfWeek ? { ...schedule, isAvailable: true } : schedule
+        );
+      }
+    } else {
+      // If unchecking, mark all schedules for the day as unavailable
+      updatedSchedules = weeklySchedule.map(schedule => 
+        schedule.dayOfWeek === dayOfWeek ? { ...schedule, isAvailable: false } : schedule
+      );
+    }
+
+    setWeeklySchedule(updatedSchedules);
+    setIsDirty(true);
+  };
+
+  const hasTimeConflict = (schedules: WeeklySchedule[], checkSchedule: WeeklySchedule): boolean => {
+    const checkStart = new Date(`1970-01-01T${checkSchedule.startTime}`);
+    const checkEnd = new Date(`1970-01-01T${checkSchedule.endTime}`);
+
+    for (const schedule of schedules) {
+      if (schedule.id === checkSchedule.id) continue; // Don't compare with itself
+
+      const start = new Date(`1970-01-01T${schedule.startTime}`);
+      const end = new Date(`1970-01-01T${schedule.endTime}`);
+
+      if (checkStart < end && checkEnd > start) {
+        return true; // Found an overlap
+      }
+    }
+    return false;
+  };
+
+  const handleOpenModal = (schedule: WeeklySchedule | null) => {
+    setEditingSchedule(schedule);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingSchedule(null);
+  };
+
+  const handleSaveSchedule = (updatedSchedule: WeeklySchedule) => {
+    const otherSchedules = weeklySchedule.filter(s => s.dayOfWeek === updatedSchedule.dayOfWeek);
+    if (hasTimeConflict(otherSchedules, updatedSchedule)) {
+      toast.error('Time conflict detected with another time block.');
+      return;
+    }
+
+    const newSchedules = weeklySchedule.map(s => s.id === updatedSchedule.id ? updatedSchedule : s);
+    setWeeklySchedule(newSchedules);
+    setIsDirty(true);
+    handleCloseModal();
+  };
+
+  const handleDeleteSchedule = (scheduleId: string) => {
+    const updatedSchedules = weeklySchedule.filter(s => s.id !== scheduleId);
+    setWeeklySchedule(updatedSchedules);
+    setIsDirty(true);
+    handleCloseModal();
+  };
+
   const getDaySchedules = (dayOfWeek: number) => {
     return weeklySchedule.filter(schedule => schedule.dayOfWeek === dayOfWeek);
   };
@@ -168,13 +257,29 @@ export default function AvailabilityPage() {
     return `${formattedHour}:${minute} ${ampm}`;
   };
 
-  const getBlockStyles = (duration: number) => {
+  const getDuration = (startTime: string, endTime: string) => {
+    const start = new Date(`1970-01-01T${startTime}`);
+    const end = new Date(`1970-01-01T${endTime}`);
+    return (end.getTime() - start.getTime()) / (1000 * 60); // duration in minutes
+  }
+
+  const getBlockColorStyles = (duration: number) => {
     if (duration <= 60) {
-      return 'bg-purple-200 border-purple-400 h-20'; // Purple for <= 1 hour
+      return 'bg-purple-200 border-purple-400 text-purple-800 hover:bg-purple-100';
     } else if (duration <= 120) {
-      return 'bg-green-200 border-green-400 h-24'; // Green for 1-2 hours
+      return 'bg-green-200 border-green-400 text-green-800 hover:bg-green-100';
     } else {
-      return 'bg-orange-200 border-orange-400 h-28'; // Orange for > 2 hours
+      return 'bg-orange-200 border-orange-400 text-orange-800 hover:bg-orange-100';
+    }
+  };
+
+  const getBlockHeightStyle = (duration: number) => {
+    if (duration <= 60) {
+      return 'h-20';
+    } else if (duration <= 120) {
+      return 'h-24';
+    } else {
+      return 'h-28';
     }
   };
 
@@ -200,47 +305,78 @@ export default function AvailabilityPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {DAYS.map((day) => {
                 const daySchedules = getDaySchedules(day.dayOfWeek);
-                const isAvailable = daySchedules.length > 0 && daySchedules.some(s => s.isAvailable);
+                const isDayAvailable = daySchedules.some(s => s.isAvailable);
 
                 return (
                   <div key={day.dayOfWeek} className="bg-gray-50 rounded-xl p-4 flex flex-col">
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="text-sm font-medium text-gray-900">{day.name}</h3>
-                      <label className="flex items-center">
+                      <label className="flex items-center cursor-pointer">
                         <input
                           type="checkbox"
                           name={`${day.dayOfWeek}-available`}
-                          checked={isAvailable}
-                          readOnly
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          checked={isDayAvailable}
+                          onChange={(e) => handleAvailabilityToggle(day.dayOfWeek, e.target.checked)}
+                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5"
                         />
                         <span className="ml-2 text-xs text-gray-600">Available</span>
                       </label>
                     </div>
 
-                    <div className="space-y-3 flex-grow">
-                      {daySchedules.map((schedule, i) => {
-                        const endTime = new Date(new Date(`1970-01-01T${schedule.startTime}`).getTime() + schedule.duration * 60000);
-                        const endTimeString = isNaN(endTime.getTime()) ? '00:00' : endTime.toISOString().substr(11, 5);
+                    <div className="flex flex-grow">
+                      <div className="flex flex-col items-center w-8 mr-4">
+                        <SunIcon className="text-gray-400 h-5 w-5" />
+                        <div className="flex-grow w-px bg-gray-300 my-1"></div>
+                        <MoonIcon className="text-gray-400 h-5 w-5" />
+                      </div>
 
-                        return (
-                          <div key={i} className={`p-3 rounded-lg border ${getBlockStyles(schedule.duration)}`}>
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <p className="font-bold">{schedule.blockName}</p>
-                                <p className="text-sm">
-                                  {formatTime(schedule.startTime)} - {formatTime(endTimeString)}
-                                </p>
+                      <div className="space-y-3 flex-grow">
+                        {daySchedules.length > 0 ? (
+                          daySchedules
+                            .sort((a, b) => a.startTime.localeCompare(b.startTime))
+                            .map((schedule, i) => {
+                            const grayStyle = 'bg-gray-200 border-gray-300 text-gray-500';
+                            const duration = getDuration(schedule.startTime, schedule.endTime);
+                            return (
+                              <div
+                                key={i}
+                                onClick={() => { if (isDayAvailable) { handleOpenModal(schedule) } }}
+                                className={`p-3 rounded-lg border transition-colors duration-200 ${getBlockHeightStyle(duration)} ${
+                                  isDayAvailable
+                                    ? `${getBlockColorStyles(duration)} cursor-pointer`
+                                    : `${grayStyle} cursor-not-allowed`
+                                }`}
+                              >
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <p className="font-bold">{schedule.blockName}</p>
+                                    <p className="text-sm">
+                                      {formatTime(schedule.startTime)} - {formatTime(schedule.endTime)}
+                                    </p>
+                                  </div>
+                                  <button type="button" onClick={() => {}} className="text-xs font-bold text-gray-600 cursor-pointer">EDIT</button>
+                                </div>
                               </div>
-                              <button type="button" onClick={() => {}} className="text-xs font-bold text-gray-600">EDIT</button>
-                            </div>
+                            );
+                          })
+                        ) : (
+                          <div className="flex items-center justify-center h-full">
+                            <p className="text-gray-500">No time slots</p>
                           </div>
-                        );
-                      })}
+                        )}
+                      </div>
                     </div>
-                    <button type="button" onClick={() => {}} className="mt-4 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600">
-                      Add Slot
-                    </button>
+
+                    <div className="flex justify-end mt-4">
+                      <button 
+                        type="button" 
+                        onClick={() => {}} 
+                        disabled={!isDayAvailable}
+                        className={`py-1 px-3 text-sm rounded-lg ${isDayAvailable ? 'bg-blue-500 text-white hover:bg-blue-600 cursor-pointer' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+                      >
+                        Add Slot
+                      </button>
+                    </div>
                   </div>
                 );
               })}
@@ -249,8 +385,8 @@ export default function AvailabilityPage() {
             <div className="flex justify-end pt-6">
               <button
                 type="button"
-                disabled
-                className="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
+                disabled={!isDirty}
+                className="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 cursor-pointer"
               >
                 Save Changes
               </button>
@@ -258,50 +394,13 @@ export default function AvailabilityPage() {
           </div>
         </div>
 
-        {/* Pre-booking Padding Settings */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Pre-booking Padding Settings</h2>
-            <p className="text-base text-gray-500">Set your pre-booking padding settings</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Default Slot Duration (minutes)
-              </label>
-              <input
-                type="number"
-                defaultValue={technician?.defaultSlotDurationMinutes ?? 60}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Default Buffer (minutes)
-              </label>
-              <input
-                type="number"
-                defaultValue={technician?.defaultBufferMinutes ?? 15}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-          </div>
-          <div className="flex justify-end pt-6">
-            <button
-              type="button"
-              onClick={() => {
-                handlePaddingUpdate(
-                  technician?.defaultSlotDurationMinutes || 60,
-                  technician?.defaultBufferMinutes || 15
-                );
-              }}
-              className="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700"
-            >
-              Update Padding
-            </button>
-          </div>
-        </div>
+        <EditTimeBlockModal
+          isOpen={isModalOpen}
+          schedule={editingSchedule}
+          onClose={handleCloseModal}
+          onSave={handleSaveSchedule}
+          onDelete={handleDeleteSchedule}
+        />
 
         {/* Exception Days Section */}
         <div className="bg-white rounded-2xl shadow-xl p-8">
@@ -412,7 +511,7 @@ export default function AvailabilityPage() {
                     </div>
                     <button
                       onClick={() => handleDeleteException(exception.id)}
-                      className="text-red-600 hover:text-red-800 text-sm font-medium"
+                      className="text-red-600 hover:text-red-800 text-sm font-medium cursor-pointer"
                     >
                       Delete
                     </button>
@@ -429,7 +528,7 @@ export default function AvailabilityPage() {
               <button
                 type="button"
                 onClick={() => setShowExceptionForm(true)}
-                className="px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                className="px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 cursor-pointer"
               >
                 Add Exception Day
               </button>

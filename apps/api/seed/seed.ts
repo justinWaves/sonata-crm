@@ -145,9 +145,9 @@ async function main() {
 
   // Define the time blocks
   const timeBlocks = [
-    { blockName: 'Morning', startTime: '09:00', duration: 180 },   // 9am - 12pm
-    { blockName: 'Afternoon', startTime: '13:00', duration: 240 }, // 1pm - 5pm
-    { blockName: 'Evening', startTime: '18:00', duration: 120 },   // 6pm - 8pm
+    { blockName: 'Morning', startTime: '09:00', endTime: '12:00' },
+    { blockName: 'Afternoon', startTime: '13:00', endTime: '17:00' },
+    { blockName: 'Evening', startTime: '18:00', endTime: '20:00' },
   ];
 
   // Create schedules for Monday to Friday (available)
@@ -162,20 +162,6 @@ async function main() {
         },
       });
     }
-  }
-
-  // Create schedules for Saturday and Sunday (unavailable)
-  for (let day of [0, 6]) {
-    await prisma.weeklySchedule.create({
-      data: {
-        technicianId: technician.id,
-        dayOfWeek: day,
-        isAvailable: false,
-        blockName: 'Unavailable',
-        startTime: '00:00',
-        duration: 0,
-      },
-    });
   }
 
   // Add service areas for Ron
