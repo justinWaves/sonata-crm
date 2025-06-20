@@ -5,6 +5,8 @@ import serviceTypeRoutes from './routes/serviceType';
 import customerRoutes from './routes/customer';
 import technicianRoutes from './routes/technician';
 import pianoRoutes from './routes/piano';
+import availabilityRoutes from './routes/availability';
+import scheduleExceptionsRoutes from './routes/scheduleExceptions';
 import { PrismaClient } from '@prisma/client';
 
 const app = express();
@@ -19,6 +21,8 @@ app.use('/service-types', serviceTypeRoutes);
 app.use('/customers', customerRoutes);
 app.use('/technicians', technicianRoutes);
 app.use('/pianos', pianoRoutes);
+app.use('/availability', availabilityRoutes);
+app.use('/schedule-exceptions', scheduleExceptionsRoutes);
 
 // Health check / root
 app.get('/', (req, res) => {

@@ -6,7 +6,10 @@ import { toast } from 'react-hot-toast';
 interface Appointment {
   id: string;
   scheduledAt: string;
-  timeSlot: string;
+  timeSlot: {
+    startTime: string;
+    blockName: string;
+  } | null;
   notes: string | null;
   customer: {
     firstName: string;
@@ -110,7 +113,7 @@ export default function AppointmentsPage() {
                           {formatDate(appointment.scheduledAt)}
                         </div>
                         <div className="text-sm text-gray-500">
-                          {formatTime(appointment.scheduledAt)}
+                          {appointment.timeSlot ? `${appointment.timeSlot.blockName} (${formatTime(appointment.timeSlot.startTime)})` : formatTime(appointment.scheduledAt)}
                         </div>
                       </td>
                       <td className="py-4 px-6">

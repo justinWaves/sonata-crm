@@ -15,9 +15,9 @@ export async function GET() {
     const data = await res.json();
     return NextResponse.json(data, { status: res.status });
   } catch (error) {
-    console.error('Error fetching availability:', error);
+    console.error('Error fetching weekly schedule:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch availability' },
+      { error: 'Failed to fetch weekly schedule' },
       { status: 500 }
     );
   }
@@ -41,9 +41,9 @@ export async function PUT(request: Request) {
     const responseData = await res.json();
     return NextResponse.json(responseData, { status: res.status });
   } catch (error) {
-    console.error('Error updating availability:', error);
+    console.error('Error updating weekly schedule:', error);
     return NextResponse.json(
-      { error: 'Failed to update availability' },
+      { error: 'Failed to update weekly schedule' },
       { status: 500 }
     );
   }

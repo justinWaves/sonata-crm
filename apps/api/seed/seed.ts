@@ -66,11 +66,11 @@ async function main() {
 
   // Create service types (assigning technicianId and updatedAt)
   const serviceTypes = [
-    { name: 'Standard Tuning', description: 'Basic tuning service', price: 195, duration: '1.5 hr', technicianId: technician.id, updatedAt: new Date() },
-    { name: 'Touch-Up Tuning', description: 'Quick tuning after pitch adjustment', price: 120, duration: '1 hr', technicianId: technician.id, updatedAt: new Date() },
-    { name: 'Minor Repair', description: 'Fixes to small mechanical issues', price: 150, duration: '1 hr', technicianId: technician.id, updatedAt: new Date() },
-    { name: 'Major Repair', description: 'Larger repair tasks including action part replacements', price: 275, duration: '2 hr', technicianId: technician2.id, updatedAt: new Date() },
-    { name: 'Lubrication', description: 'Lubricate moving parts for better feel and longevity', price: 60, duration: '0.5 hr', technicianId: technician2.id, updatedAt: new Date() },
+    { name: 'Standard Tuning', description: 'Basic tuning service', price: 195, duration: '1.5 hr', durationMinutes: 90, bufferMinutes: 15, technicianId: technician.id, updatedAt: new Date() },
+    { name: 'Touch-Up Tuning', description: 'Quick tuning after pitch adjustment', price: 120, duration: '1 hr', durationMinutes: 60, bufferMinutes: 10, technicianId: technician.id, updatedAt: new Date() },
+    { name: 'Minor Repair', description: 'Fixes to small mechanical issues', price: 150, duration: '1 hr', durationMinutes: 60, bufferMinutes: 15, technicianId: technician.id, updatedAt: new Date() },
+    { name: 'Major Repair', description: 'Larger repair tasks including action part replacements', price: 275, duration: '2 hr', durationMinutes: 120, bufferMinutes: 30, technicianId: technician2.id, updatedAt: new Date() },
+    { name: 'Lubrication', description: 'Lubricate moving parts for better feel and longevity', price: 60, duration: '0.5 hr', durationMinutes: 30, bufferMinutes: 5, technicianId: technician2.id, updatedAt: new Date() },
   ];
   for (const st of serviceTypes) {
     await prisma.serviceType.create({ data: st });
@@ -136,12 +136,47 @@ async function main() {
       pianoId: piano.id,
       serviceTypeId: standardTuning.id,
       scheduledAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3), // 3 days from now
-      timeSlot: 'Morning',
       notes: 'Client prefers early morning slots. Bring tools for pedal check.',
     },
   });
 
+  // Clear existing weekly schedules to prevent duplicates during re-seeding
+  await prisma.weeklySchedule.deleteMany({});
 
+  // Define the time blocks
+  const timeBlocks = [
+    { blockName: 'Morning', startTime: '09:00', duration: 180 },   // 9am - 12pm
+    { blockName: 'Afternoon', startTime: '13:00', duration: 240 }, // 1pm - 5pm
+    { blockName: 'Evening', startTime: '18:00', duration: 120 },   // 6pm - 8pm
+  ];
+
+  // Create schedules for Monday to Friday (available)
+  for (let day = 1; day <= 5; day++) {
+    for (const block of timeBlocks) {
+      await prisma.weeklySchedule.create({
+        data: {
+          technicianId: technician.id,
+          dayOfWeek: day,
+          isAvailable: true,
+          ...block,
+        },
+      });
+    }
+  }
+
+  // Create schedules for Saturday and Sunday (unavailable)
+  for (let day of [0, 6]) {
+    await prisma.weeklySchedule.create({
+      data: {
+        technicianId: technician.id,
+        dayOfWeek: day,
+        isAvailable: false,
+        blockName: 'Unavailable',
+        startTime: '00:00',
+        duration: 0,
+      },
+    });
+  }
 
   // Add service areas for Ron
   await prisma.serviceArea.createMany({
@@ -203,7 +238,6 @@ async function main() {
       pianoId: piano2.id,
       serviceTypeId: standardTuning.id,
       scheduledAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 5), // 5 days from now
-      timeSlot: 'Afternoon',
       notes: 'Check sticky key and perform standard tuning.',
     },
   });

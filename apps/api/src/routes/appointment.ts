@@ -35,6 +35,7 @@ router.get('/', async (req, res) => {
             duration: true,
           },
         },
+        timeSlot: true,
       },
       orderBy: { scheduledAt: 'asc' },
     });

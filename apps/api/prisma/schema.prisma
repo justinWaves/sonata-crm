@@ -26,12 +26,17 @@ model Technician {
   timezone      String?
   zipCode       String?
   address       String?
+  defaultSlotDurationMinutes Int @default(60)
+  defaultBufferMinutes       Int @default(15)
   appointments  Appointment[]
   availability  Availability[]
   customers     Customer[]
   services      Service[]
   serviceAreas  ServiceArea[]
   serviceTypes  ServiceType[]
+  weeklySchedule WeeklySchedule[]
+  scheduleExceptions ScheduleException[]
+  timeSlots     TimeSlot[]
 }
 
 model ServiceArea {
@@ -102,9 +107,11 @@ model ServiceType {
   createdAt    DateTime      @default(now())
   technicianId String
   updatedAt    DateTime      @updatedAt
+  durationMinutes Int @default(60)
+  bufferMinutes   Int @default(15)
   appointments Appointment[]
   services     Service[]
-  technician   Technician    @relation(fields: [technicianId], references: [id])
+  technician   Technician  @relation(fields: [technicianId], references: [id])
 }
 
 model Appointment {
@@ -114,13 +121,16 @@ model Appointment {
   pianoId       String
   serviceTypeId String
   scheduledAt   DateTime
-  timeSlot      String?
   notes         String?
   createdAt     DateTime    @default(now())
+  timeSlotId    String?
+  endTime       DateTime?
+  status        AppointmentStatus @default(SCHEDULED)
   customer      Customer    @relation(fields: [customerId], references: [id])
   piano         Piano       @relation(fields: [pianoId], references: [id])
   serviceType   ServiceType @relation(fields: [serviceTypeId], references: [id])
   technician    Technician  @relation(fields: [technicianId], references: [id])
+  timeSlot      TimeSlot?   @relation(fields: [timeSlotId], references: [id])
 }
 
 model Availability {
@@ -134,4 +144,67 @@ model Availability {
   tech      Technician @relation(fields: [techId], references: [id])
 
   @@unique([techId, dayOfWeek])
+}
+
+model WeeklySchedule {
+  id            String     @id @default(uuid())
+  technicianId  String
+  dayOfWeek     Int
+  startTime     String
+  duration      Int // Duration in minutes
+  blockName     String
+  isAvailable   Boolean    @default(true)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  technician    Technician @relation(fields: [technicianId], references: [id])
+
+  @@unique([technicianId, dayOfWeek, startTime])
+}
+
+model ScheduleException {
+  id            String     @id @default(uuid())
+  technicianId  String
+  date          DateTime
+  startTime     String?
+  endTime       String?
+  isAvailable   Boolean    @default(true)
+  reason        String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  technician    Technician @relation(fields: [technicianId], references: [id])
+
+  @@unique([technicianId, date])
+}
+
+model TimeSlot {
+  id            String     @id @default(uuid())
+  technicianId  String
+  date          DateTime
+  startTime     DateTime
+  endTime       DateTime
+  durationMinutes Int
+  bufferMinutes   Int
+  status        TimeSlotStatus @default(AVAILABLE)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  technician    Technician @relation(fields: [technicianId], references: [id])
+  appointments  Appointment[]
+
+  @@unique([technicianId, startTime])
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum TimeSlotStatus {
+  AVAILABLE
+  BOOKED
+  BLOCKED
+  UNAVAILABLE
 }
