@@ -5,6 +5,7 @@ import { toast } from 'react-hot-toast';
 import { SunIcon } from '@/components/SunIcon';
 import { MoonIcon } from '@/components/MoonIcon';
 import { EditTimeBlockModal, WeeklySchedule } from '@/components/EditTimeBlockModal';
+import { AddTimeBlockModal } from '@/components/AddTimeBlockModal';
 
 /*
 interface WeeklySchedule {
@@ -58,10 +59,12 @@ export default function AvailabilityPage() {
   const [scheduleExceptions, setScheduleExceptions] = useState<ScheduleException[]>([]);
   const [technician, setTechnician] = useState<Technician | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isDirty, setIsDirty] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState<WeeklySchedule | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [dayToAddTo, setDayToAddTo] = useState<number | null>(null);
   const [showExceptionForm, setShowExceptionForm] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
   const [newException, setNewException] = useState({
     date: '',
     startTime: '',
@@ -75,6 +78,10 @@ export default function AvailabilityPage() {
       fetchData();
     }
   }, [session]);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   const fetchData = async () => {
     try {
@@ -162,12 +169,33 @@ export default function AvailabilityPage() {
     }
   };
 
+  const updateScheduleOnBackend = async (updatedSchedule: WeeklySchedule[]) => {
+    try {
+        const response = await fetch('/api/availability', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedSchedule),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to save changes.');
+        }
+
+        toast.success('Availability updated!');
+        // Re-fetch data to ensure UI is in sync with DB, especially for new item IDs
+        await fetchData(); 
+    } catch (error) {
+        console.error('Error saving changes:', error);
+        toast.error(error instanceof Error ? error.message : 'An unknown error occurred.');
+        // Optional: Revert local state to previous state on error
+    }
+  };
+
   const handleAvailabilityToggle = (dayOfWeek: number, isChecked: boolean) => {
-    const schedulesForDay = weeklySchedule.filter(s => s.dayOfWeek === dayOfWeek);
     let updatedSchedules = [...weeklySchedule];
 
     if (isChecked) {
-      if (schedulesForDay.length === 0) {
+      if (updatedSchedules.filter(s => s.dayOfWeek === dayOfWeek).length === 0) {
         // If no schedules exist, add a default one.
         const newBlock = {
           id: `temp-${Date.now()}`, // Temp ID for React key
@@ -193,7 +221,7 @@ export default function AvailabilityPage() {
     }
 
     setWeeklySchedule(updatedSchedules);
-    setIsDirty(true);
+    updateScheduleOnBackend(updatedSchedules);
   };
 
   const hasTimeConflict = (schedules: WeeklySchedule[], checkSchedule: WeeklySchedule): boolean => {
@@ -213,14 +241,24 @@ export default function AvailabilityPage() {
     return false;
   };
 
-  const handleOpenModal = (schedule: WeeklySchedule | null) => {
+  const handleOpenEditModal = (schedule: WeeklySchedule) => {
     setEditingSchedule(schedule);
-    setIsModalOpen(true);
+    setIsEditModalOpen(true);
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
     setEditingSchedule(null);
+  };
+
+  const handleOpenAddModal = (dayOfWeek: number) => {
+    setDayToAddTo(dayOfWeek);
+    setIsAddModalOpen(true);
+  };
+
+  const handleCloseAddModal = () => {
+    setIsAddModalOpen(false);
+    setDayToAddTo(null);
   };
 
   const handleSaveSchedule = (updatedSchedule: WeeklySchedule) => {
@@ -232,15 +270,37 @@ export default function AvailabilityPage() {
 
     const newSchedules = weeklySchedule.map(s => s.id === updatedSchedule.id ? updatedSchedule : s);
     setWeeklySchedule(newSchedules);
-    setIsDirty(true);
-    handleCloseModal();
+    handleCloseEditModal();
+    updateScheduleOnBackend(newSchedules);
+  };
+
+  const handleAddSchedule = (newScheduleData: Omit<WeeklySchedule, 'id' | 'technicianId'>) => {
+    const tempId = `new-${Date.now()}`;
+    const technicianId = session?.user?.id || '';
+    
+    const newSchedule: WeeklySchedule = {
+      ...newScheduleData,
+      id: tempId,
+      technicianId,
+    };
+
+    const daySchedules = weeklySchedule.filter(s => s.dayOfWeek === newSchedule.dayOfWeek);
+    if (hasTimeConflict(daySchedules, newSchedule)) {
+        toast.error('Time conflict detected with another time block.');
+        return;
+    }
+
+    const finalSchedules = [...weeklySchedule, newSchedule];
+    setWeeklySchedule(finalSchedules);
+    handleCloseAddModal();
+    updateScheduleOnBackend(finalSchedules);
   };
 
   const handleDeleteSchedule = (scheduleId: string) => {
     const updatedSchedules = weeklySchedule.filter(s => s.id !== scheduleId);
     setWeeklySchedule(updatedSchedules);
-    setIsDirty(true);
-    handleCloseModal();
+    handleCloseEditModal();
+    updateScheduleOnBackend(updatedSchedules);
   };
 
   const getDaySchedules = (dayOfWeek: number) => {
@@ -310,7 +370,7 @@ export default function AvailabilityPage() {
                 return (
                   <div key={day.dayOfWeek} className="bg-gray-50 rounded-xl p-4 flex flex-col">
                     <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-sm font-medium text-gray-900">{day.name}</h3>
+                      <h3 className="text-md font-medium text-gray-900">{day.name}</h3>
                       <label className="flex items-center cursor-pointer">
                         <input
                           type="checkbox"
@@ -340,7 +400,7 @@ export default function AvailabilityPage() {
                             return (
                               <div
                                 key={i}
-                                onClick={() => { if (isDayAvailable) { handleOpenModal(schedule) } }}
+                                onClick={() => { if (isDayAvailable) { handleOpenEditModal(schedule) } }}
                                 className={`p-3 rounded-lg border transition-colors duration-200 ${getBlockHeightStyle(duration)} ${
                                   isDayAvailable
                                     ? `${getBlockColorStyles(duration)} cursor-pointer`
@@ -351,7 +411,7 @@ export default function AvailabilityPage() {
                                   <div>
                                     <p className="font-bold">{schedule.blockName}</p>
                                     <p className="text-sm">
-                                      {formatTime(schedule.startTime)} - {formatTime(schedule.endTime)}
+                                      {hasMounted ? `${formatTime(schedule.startTime)} - ${formatTime(schedule.endTime)}` : ''}
                                     </p>
                                   </div>
                                   <button type="button" onClick={() => {}} className="text-xs font-bold text-gray-600 cursor-pointer">EDIT</button>
@@ -370,7 +430,7 @@ export default function AvailabilityPage() {
                     <div className="flex justify-end mt-4">
                       <button 
                         type="button" 
-                        onClick={() => {}} 
+                        onClick={() => handleOpenAddModal(day.dayOfWeek)} 
                         disabled={!isDayAvailable}
                         className={`py-1 px-3 text-sm rounded-lg ${isDayAvailable ? 'bg-blue-500 text-white hover:bg-blue-600 cursor-pointer' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
                       >
@@ -381,26 +441,25 @@ export default function AvailabilityPage() {
                 );
               })}
             </div>
-
-            <div className="flex justify-end pt-6">
-              <button
-                type="button"
-                disabled={!isDirty}
-                className="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 cursor-pointer"
-              >
-                Save Changes
-              </button>
-            </div>
           </div>
         </div>
 
         <EditTimeBlockModal
-          isOpen={isModalOpen}
+          isOpen={isEditModalOpen}
           schedule={editingSchedule}
-          onClose={handleCloseModal}
+          onClose={handleCloseEditModal}
           onSave={handleSaveSchedule}
           onDelete={handleDeleteSchedule}
         />
+
+        {dayToAddTo !== null && (
+          <AddTimeBlockModal 
+            isOpen={isAddModalOpen}
+            dayOfWeek={dayToAddTo}
+            onClose={handleCloseAddModal}
+            onSave={handleAddSchedule}
+          />
+        )}
 
         {/* Exception Days Section */}
         <div className="bg-white rounded-2xl shadow-xl p-8">
@@ -493,19 +552,10 @@ export default function AvailabilityPage() {
                       <div className={`w-3 h-3 rounded-full ${exception.isAvailable ? 'bg-green-500' : 'bg-red-500'}`}></div>
                       <div>
                         <div className="font-medium text-gray-900">
-                          {new Date(exception.date).toLocaleDateString('en-US', { 
-                            weekday: 'long', 
-                            year: 'numeric', 
-                            month: 'long', 
-                            day: 'numeric' 
-                          })}
+                          {hasMounted ? new Date(exception.date).toLocaleDateString() : ''}
                         </div>
                         <div className="text-sm text-gray-500">
-                          {exception.isAvailable 
-                            ? `${exception.startTime || 'All day'} - ${exception.endTime || 'All day'}`
-                            : 'Not available'
-                          }
-                          {exception.reason && ` • ${exception.reason}`}
+                          {exception.isAvailable ? 'Available' : 'Unavailable'}
                         </div>
                       </div>
                     </div>
