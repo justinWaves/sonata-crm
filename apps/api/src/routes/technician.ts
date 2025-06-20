@@ -75,8 +75,14 @@ router.post('/auth', async (req, res) => {
     console.log('Looking for user with email:', email);
     const user = await prisma.technician.findUnique({ where: { email } });
     console.log('User found:', user ? 'Yes' : 'No');
-    if (!user || user.password !== password) {
-      console.log('Password check failed. Expected:', user?.password, 'Got:', password);
+    if (!user || user.password.trim() !== password.trim()) {
+      console.log('Password check failed.');
+      if (user) {
+        console.log(`Expected: '${user.password}' (length: ${user.password.length})`);
+        console.log(`Got: '${password}' (length: ${password.length})`);
+      } else {
+        console.log('User not found in database.');
+      }
       // In production, use hashed passwords!
       return res.status(401).json({ error: 'Invalid credentials' });
     }

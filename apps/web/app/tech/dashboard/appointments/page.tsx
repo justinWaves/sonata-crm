@@ -3,6 +3,14 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
 
+interface ServiceType {
+  id: string;
+  name: string;
+  duration: string;
+  serviceType: string;
+  serviceTypeColor: string;
+}
+
 interface Appointment {
   id: string;
   scheduledAt: string;
@@ -21,10 +29,29 @@ interface Appointment {
     brand: string | null;
     model: string | null;
   };
-  serviceType: {
-    name: string;
-    duration: string;
-  };
+  serviceType: ServiceType;
+}
+
+const colorOptions = [
+  { name: 'Purple', value: '#a78bfa', dark: '#6d28d9' },
+  { name: 'Green', value: '#34d399', dark: '#059669' },
+  { name: 'Yellow', value: '#fbbf24', dark: '#b45309' },
+  { name: 'Red', value: '#f87171', dark: '#b91c1c' },
+  { name: 'Orange', value: '#fb923c', dark: '#ea580c' },
+  { name: 'Violet', value: '#c4b5fd', dark: '#7c3aed' },
+  { name: 'Blue', value: '#60a5fa', dark: '#1d4ed8' },
+];
+
+function getDarkColor(hex: string) {
+  const found = colorOptions.find(opt => opt.value === hex);
+  if (found) {
+    const dark = found.dark.replace('#', '');
+    const r = Math.max(0, parseInt(dark.substring(0, 2), 16) - 32).toString(16).padStart(2, '0');
+    const g = Math.max(0, parseInt(dark.substring(2, 4), 16) - 32).toString(16).padStart(2, '0');
+    const b = Math.max(0, parseInt(dark.substring(4, 6), 16) - 32).toString(16).padStart(2, '0');
+    return `#${r}${g}${b}`;
+  }
+  return '#222';
 }
 
 export default function AppointmentsPage() {
@@ -88,6 +115,7 @@ export default function AppointmentsPage() {
               <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Date & Time</th>
               <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Customer</th>
               <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Service</th>
+              <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Type</th>
               <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Location</th>
               <th className="text-right py-4 px-6 text-sm font-semibold text-gray-600">Actions</th>
             </tr>
@@ -95,7 +123,7 @@ export default function AppointmentsPage() {
           <tbody>
             {appointments.length === 0 ? (
               <tr>
-                <td colSpan={5} className="text-center py-8 text-gray-500">
+                <td colSpan={6} className="text-center py-8 text-gray-500">
                   No appointments found
                 </td>
               </tr>
@@ -125,6 +153,25 @@ export default function AppointmentsPage() {
                     <div className="text-sm text-gray-500">
                       {appointment.serviceType.duration}
                     </div>
+                  </td>
+                  <td className="py-4 px-6">
+                    {appointment.serviceType.serviceType ? (
+                      <span
+                        style={{
+                          background: appointment.serviceType.serviceTypeColor,
+                          color: getDarkColor(appointment.serviceType.serviceTypeColor),
+                          border: `1px solid ${getDarkColor(appointment.serviceType.serviceTypeColor)}`,
+                          fontSize: '0.92rem',
+                          padding: '0.18rem 0.7rem',
+                          fontWeight: 600,
+                        }}
+                        className="inline-block text-nowrap rounded-lg"
+                      >
+                        {appointment.serviceType.serviceType}
+                      </span>
+                    ) : (
+                      <span className="text-sm text-gray-500">N/A</span>
+                    )}
                   </td>
                   <td className="py-4 px-6">
                     <div className="text-sm text-gray-900">

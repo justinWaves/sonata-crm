@@ -19,6 +19,7 @@ app.use(cors());
 app.use(express.json());
 
 // API Routes
+app.use('/technicians', technicianRoutes);
 app.use('/customers', customerRoutes);
 app.use('/pianos', pianoRoutes);
 app.use('/service-types', serviceTypeRoutes);

@@ -532,12 +532,12 @@ export default function AvailabilityPage() {
 
   return (
     <div className="w-full max-w-full md:max-w-4xl lg:max-w-7xl mx-auto space-y-8">
-      {/* Weekly Availability Section */}
-      <div className="bg-white rounded-2xl shadow-xl p-8">
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Weekly Availability</h2>
-          <p className="text-base text-gray-500">Set your recurring schedule for each day of the week</p>
-        </div>
+        {/* Weekly Availability Section */}
+        <div className="bg-white rounded-2xl shadow-xl p-8">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Weekly Availability</h2>
+            <p className="text-base text-gray-500">Set your recurring schedule for each day of the week</p>
+          </div>
 
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
@@ -697,8 +697,8 @@ export default function AvailabilityPage() {
                 {/* Time Fields - Only shown when available */}
                 {newException.isAvailable && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-orange-800 mb-2">Start Time</label>
+                  <div>
+                    <label className="block text-sm font-medium text-orange-800 mb-2">Start Time</label>
                     <input
                       type="time"
                       value={newException.startTime}

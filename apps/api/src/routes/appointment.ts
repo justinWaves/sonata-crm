@@ -29,12 +29,7 @@ router.get('/', async (req, res) => {
             model: true,
           },
         },
-        serviceType: {
-          select: {
-            name: true,
-            duration: true,
-          },
-        },
+        serviceType: true,
         timeSlot: true,
       },
       orderBy: { scheduledAt: 'asc' },
@@ -84,12 +79,7 @@ router.post('/', async (req, res) => {
             model: true,
           },
         },
-        serviceType: {
-          select: {
-            name: true,
-            duration: true,
-          },
-        },
+        serviceType: true,
       },
     });
     res.json(appointment);
@@ -139,12 +129,7 @@ router.put('/:id', async (req, res) => {
             model: true,
           },
         },
-        serviceType: {
-          select: {
-            name: true,
-            duration: true,
-          },
-        },
+        serviceType: true,
       },
     });
     res.json(appointment);

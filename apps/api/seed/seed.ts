@@ -4,13 +4,16 @@ const prisma = new PrismaClient();
 console.log('Seeding started');
 
 async function main() {
+  const defaultPassword = '1234';
+  console.log(`Creating default technicians with password: "${defaultPassword}"`);
+
   // Create a technician with custom message and service prices
   const technician = await prisma.technician.create({
     data: {
       firstName: 'Justin Waves',
       lastName: 'Waves',
       email: 'juhstinn@gmail.com',
-      password: '1234',
+      password: defaultPassword,
       phone: '555-1234',
       websiteURL: 'https://sonatapianoworks.com',
       companyName: 'Sonata Piano Works',
@@ -38,7 +41,7 @@ async function main() {
       firstName: 'Melody',
       lastName: 'Harmony',
       email: 'melody@example.com',
-      password: '1234',
+      password: defaultPassword,
       phone: '555-5555',
       companyName: 'Harmony Music School',
       address: '789 Cadence Ct',
@@ -59,7 +62,7 @@ async function main() {
       firstName: 'Ron',
       lastName: 'Henderson',
       email: 'ron@example.com',
-      password: '1234',
+      password: defaultPassword,
       phone: '555-9876',
       websiteURL: 'https://ronspiano.com',
       companyName: "Ron's Piano Service",
