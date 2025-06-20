@@ -1,11 +1,11 @@
 'use client';
 
 import Header from '@/components/Header';
-import Link from 'next/link';
 import { signOut, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Providers from '@/providers/Providers';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import Sidebar from '@/components/Sidebar';
 
 const navItems = [
   { label: 'Dashboard', href: '/tech/dashboard' },
@@ -19,6 +19,7 @@ const navItems = [
 function DashboardContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { data: session, status } = useSession();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -35,38 +36,20 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <>
-      <Header />
-      <div className="flex min-h-[calc(100vh-56px)] bg-gray-50">
+    <div className="w-full min-w-0 md:min-w-[1024px]">
+      <Header onMenuClick={() => setSidebarOpen(true)} />
+      <div className="flex h-[calc(100vh-56px)] bg-gray-50 pt-[56px]">
         {/* Sidebar */}
-        <aside className="w-56 bg-white border-r border-gray-200 flex flex-col py-8 px-4">
-          <nav className="flex-1 flex flex-col gap-2">
-            {navItems.map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                className="px-3 py-2 rounded hover:bg-gray-100 text-gray-800 font-medium"
-              >
-                {item.label}
-              </Link>
-            ))}
-            <button
-              onClick={async () => {
-                await signOut({ redirect: false });
-                router.push('/');
-              }}
-              className="px-3 py-2 rounded hover:bg-gray-100 text-gray-800 font-medium text-left cursor-pointer mt-2"
-            >
-              Log out
-            </button>
-          </nav>
-        </aside>
+        <Sidebar show="desktop" navItems={navItems} />
+        <Sidebar show="mobile" open={sidebarOpen} onClose={() => setSidebarOpen(false)} navItems={navItems} />
         {/* Main content */}
-        <main className="flex-1 flex flex-col">
-          {children}
+        <main className="flex-1 flex flex-col overflow-y-auto">
+          <div className="max-w-7xl mx-auto w-full p-8">
+            {children}
+          </div>
         </main>
       </div>
-    </>
+    </div>
   );
 }
 

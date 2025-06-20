@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import PencilIcon from '@/components/PencilIcon';
 import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
+import { createPortal } from 'react-dom';
 
 interface ServiceType {
   id: string;
@@ -118,85 +119,81 @@ export default function ServicesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-lg text-gray-600">Loading services...</div>
-      </div>
+      <div className="text-lg text-gray-600">Loading services...</div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
-      <div className="max-w-7xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Services</h2>
-            <p className="text-base text-gray-500">Manage your service offerings and pricing</p>
-          </div>
+    <>
+      <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Services</h2>
+          <p className="text-base text-gray-500">Manage your service offerings and pricing</p>
+        </div>
 
-          <div className="mb-6 flex justify-end">
-            <button 
-              onClick={handleAddNew}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              Add New Service
-            </button>
-          </div>
+        <div className="mb-6 flex justify-end">
+          <button 
+            onClick={handleAddNew}
+            className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Add New Service
+          </button>
+        </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Service</th>
-                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Description</th>
-                  <th className="text-right py-4 px-6 text-sm font-semibold text-gray-600">Price</th>
-                  <th className="text-right py-4 px-6 text-sm font-semibold text-gray-600">Duration</th>
-                  <th className="text-right py-4 px-6 text-sm font-semibold text-gray-600">Actions</th>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-200">
+                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Service</th>
+                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Description</th>
+                <th className="text-right py-4 px-6 text-sm font-semibold text-gray-600">Price</th>
+                <th className="text-right py-4 px-6 text-sm font-semibold text-gray-600">Duration</th>
+                <th className="text-right py-4 px-6 text-sm font-semibold text-gray-600">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {services.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="text-center py-8 text-gray-500">
+                    No services found
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {services.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="text-center py-8 text-gray-500">
-                      No services found
+              ) : (
+                services.map((service) => (
+                  <tr 
+                    key={service.id}
+                    className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="py-4 px-6">
+                      <div className="text-sm font-medium text-gray-900">{service.name}</div>
+                    </td>
+                    <td className="py-4 px-6 text-sm text-gray-900">{service.description}</td>
+                    <td className="py-4 px-6 text-sm text-gray-900 text-right font-medium">
+                      {formatPrice(service.price)}
+                    </td>
+                    <td className="py-4 px-6 text-sm text-gray-900 text-right">{service.duration}</td>
+                    <td className="py-4 px-6 text-right">
+                      <button
+                        onClick={() => {
+                          setEditing(service);
+                          setIsAdding(false);
+                          setIsDeleting(false);
+                        }}
+                        className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                      >
+                        Edit
+                      </button>
                     </td>
                   </tr>
-                ) : (
-                  services.map((service) => (
-                    <tr 
-                      key={service.id}
-                      className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
-                    >
-                      <td className="py-4 px-6">
-                        <div className="text-sm font-medium text-gray-900">{service.name}</div>
-                      </td>
-                      <td className="py-4 px-6 text-sm text-gray-900">{service.description}</td>
-                      <td className="py-4 px-6 text-sm text-gray-900 text-right font-medium">
-                        {formatPrice(service.price)}
-                      </td>
-                      <td className="py-4 px-6 text-sm text-gray-900 text-right">{service.duration}</td>
-                      <td className="py-4 px-6 text-right">
-                        <button
-                          onClick={() => {
-                            setEditing(service);
-                            setIsAdding(false);
-                            setIsDeleting(false);
-                          }}
-                          className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                        >
-                          Edit
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 
       {/* Modal */}
-      {(editing || isAdding) && (
+      {(editing || isAdding) && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div 
             className="absolute inset-0 bg-black/40 backdrop-blur-sm" 
@@ -284,7 +281,8 @@ export default function ServicesPage() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Delete Confirmation Modal */}
@@ -316,6 +314,6 @@ export default function ServicesPage() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 } 
