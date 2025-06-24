@@ -38,7 +38,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   return (
     <div className="w-full min-w-0 md:min-w-[1024px]">
       <Header onMenuClick={() => setSidebarOpen(true)} />
-      <div className="flex h-[calc(100vh-56px)] bg-gray-50 pt-[56px]">
+      <div className="flex h-screen bg-gray-50 pt-[56px]">
         {/* Sidebar */}
         <Sidebar show="desktop" navItems={navItems} />
         <Sidebar show="mobile" open={sidebarOpen} onClose={() => setSidebarOpen(false)} navItems={navItems} />
