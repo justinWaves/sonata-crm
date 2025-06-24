@@ -22,7 +22,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, navItems, show }) => {
   // Desktop sidebar
   if (show === 'desktop') {
     return (
-      <aside className="w-56 bg-white border-r border-gray-200 flex flex-col py-8 px-4 hidden md:flex">
+      <aside className="w-56 bg-white border-r border-gray-200 flex-col py-8 px-4 hidden md:flex">
         <nav className="flex-1 flex flex-col gap-2">
           {navItems.map((item) => (
             <Link
