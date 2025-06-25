@@ -23,7 +23,7 @@ export default function Header({ showTechLogin, onMenuClick }: { showTechLogin?:
       {showTechLogin && (
         <Link href="/tech/login">
           <button className="bg-white border border-gray-500 text-gray-500 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition cursor-pointer">
-            Technician Login
+            Log In
           </button>
         </Link>
       )}

@@ -15,11 +15,11 @@ function StepWelcome({ onNext }: { onNext: () => void }) {
           <div className="flex flex-col gap-6 items-center">
             <h2 className="text-2xl font-bold text-gray-900 text-center">Welcome to Sonata</h2>
             <p className="text-base text-gray-500 text-center">Book your piano service with ease</p>
-            <Logo width={200} />
+            <Logo width={120} />
             <div className="w-full space-y-4">
               <Input 
                 placeholder="Enter your zipcode" 
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base bg-gray-50" 
                 disabled 
               />
               <div className="text-gray-500 text-sm text-center">
@@ -27,7 +27,7 @@ function StepWelcome({ onNext }: { onNext: () => void }) {
               </div>
             </div>
             <Button 
-              className="w-full mt-4 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" 
+              className="w-full mt-4 px-4 py-2 text-base font-semibold text-white bg-blue-600 rounded-lg shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" 
               onClick={onNext}
             >
               Get Started
@@ -49,11 +49,10 @@ function StepInstrument({ onNext, onBack }: { onNext: () => void; onBack: () => 
               <h2 className="text-2xl font-bold text-gray-900 text-center mb-2">Tell us about your instrument</h2>
               <p className="text-base text-gray-500 text-center">Help us provide the best service for your piano</p>
             </div>
-            
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Piano Type</label>
-                <select className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <select className="w-full border border-gray-200 rounded-lg px-3 py-2 bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base">
                   <option>Grand</option>
                   <option>Upright</option>
                   <option>Console</option>
@@ -61,33 +60,30 @@ function StepInstrument({ onNext, onBack }: { onNext: () => void; onBack: () => 
                   <option>Other</option>
                 </select>
               </div>
-              
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Model (optional)</label>
                   <Input 
                     placeholder="Model" 
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base bg-gray-50" 
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Make (optional)</label>
                   <Input 
                     placeholder="Make" 
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base bg-gray-50" 
                   />
                 </div>
               </div>
-              
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Year (optional)</label>
                 <Input 
                   placeholder="Year" 
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base bg-gray-50" 
                 />
               </div>
             </div>
-
             <div className="mt-6">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Tuning Packages</h3>
               <div className="space-y-4">
@@ -99,7 +95,6 @@ function StepInstrument({ onNext, onBack }: { onNext: () => void; onBack: () => 
                   </div>
                   <div className="text-sm font-medium text-gray-900">$95</div>
                 </label>
-                
                 <label className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
                   <input type="radio" className="h-4 w-4 text-blue-600 focus:ring-blue-500" disabled />
                   <div className="ml-3 flex-1">
@@ -108,7 +103,6 @@ function StepInstrument({ onNext, onBack }: { onNext: () => void; onBack: () => 
                   </div>
                   <div className="text-sm font-medium text-gray-900">$110</div>
                 </label>
-                
                 <label className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
                   <input type="radio" className="h-4 w-4 text-blue-600 focus:ring-blue-500" disabled />
                   <div className="ml-3 flex-1">
@@ -119,22 +113,20 @@ function StepInstrument({ onNext, onBack }: { onNext: () => void; onBack: () => 
                 </label>
               </div>
             </div>
-
             <div className="flex justify-between text-sm text-gray-500 mt-4">
               <span>Duration Estimate: 1.5 hours</span>
               <span>Total Cost: $110</span>
             </div>
-
             <div className="flex gap-4 mt-6">
               <Button 
-                className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" 
+                className="flex-1 px-4 py-2 text-base font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" 
                 variant="secondary"
                 onClick={onBack}
               >
                 Back
               </Button>
               <Button 
-                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" 
+                className="flex-1 px-4 py-2 text-base font-semibold text-white bg-blue-600 rounded-lg shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" 
                 onClick={onNext}
               >
                 Next
