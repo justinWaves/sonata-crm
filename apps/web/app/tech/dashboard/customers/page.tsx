@@ -358,7 +358,56 @@ export default function CustomersPage() {
 
   if (loading) {
     return (
-      <div className="text-lg text-gray-600">Loading customers...</div>
+      <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="mb-8">
+          <div className="h-8 bg-gray-200 rounded w-1/4 mb-2"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-200">
+                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Name</th>
+                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Phone</th>
+                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Email</th>
+                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Address</th>
+                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Pianos</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[1, 2, 3].map((i) => (
+                <tr key={i} className="border-b border-gray-100">
+                  <td className="py-4 px-6">
+                    <div className="flex items-center">
+                      <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+                      <div className="ml-4">
+                        <div className="h-4 bg-gray-200 rounded w-24"></div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-4 px-6">
+                    <div className="h-4 bg-gray-200 rounded w-20"></div>
+                  </td>
+                  <td className="py-4 px-6">
+                    <div className="h-4 bg-gray-200 rounded w-28"></div>
+                  </td>
+                  <td className="py-4 px-6">
+                    <div className="h-4 bg-gray-200 rounded w-32"></div>
+                  </td>
+                  <td className="py-4 px-6">
+                    <div className="h-4 bg-gray-200 rounded w-16"></div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="mt-6 flex justify-end">
+          <div className="h-10 bg-gray-200 rounded w-32"></div>
+        </div>
+      </div>
     );
   }
 

@@ -192,7 +192,58 @@ export default function ServicesPage() {
 
   if (loading) {
     return (
-      <div className="text-lg text-gray-600">Loading services...</div>
+      <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="mb-8">
+          <div className="h-8 bg-gray-200 rounded w-1/4 mb-2"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+        </div>
+
+        <div className="mb-6 flex justify-end">
+          <div className="h-10 bg-gray-200 rounded w-32"></div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-200">
+                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Service</th>
+                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Description</th>
+                <th className="text-center py-4 px-6 text-sm font-semibold text-gray-600">Service Type</th>
+                <th className="text-right py-4 px-6 text-sm font-semibold text-gray-600">Price</th>
+                <th className="text-right py-4 px-6 text-sm font-semibold text-gray-600">Duration</th>
+                <th className="text-right py-4 px-6 text-sm font-semibold text-gray-600">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[1, 2, 3].map((i) => (
+                <tr key={i} className="border-b border-gray-100">
+                  <td className="py-4 px-6">
+                    <div className="h-4 bg-gray-200 rounded w-20"></div>
+                  </td>
+                  <td className="py-4 px-6">
+                    <div className="h-4 bg-gray-200 rounded w-32"></div>
+                  </td>
+                  <td className="py-4 px-6 text-center">
+                    <div className="h-6 bg-gray-200 rounded w-16 mx-auto"></div>
+                  </td>
+                  <td className="py-4 px-6 text-right">
+                    <div className="h-4 bg-gray-200 rounded w-16 ml-auto"></div>
+                  </td>
+                  <td className="py-4 px-6 text-right">
+                    <div className="h-4 bg-gray-200 rounded w-12 ml-auto"></div>
+                  </td>
+                  <td className="py-4 px-6 text-right">
+                    <div className="flex justify-end space-x-4">
+                      <div className="h-4 bg-gray-200 rounded w-8"></div>
+                      <div className="h-4 bg-gray-200 rounded w-12"></div>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     );
   }
 
