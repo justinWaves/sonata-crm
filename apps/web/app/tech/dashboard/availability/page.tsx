@@ -172,7 +172,7 @@ export default function AvailabilityPage() {
       );
 
       if (conflict) {
-        toast.error(conflict.message);
+        toast.error(`Cannot add exception: ${conflict.message}`);
         return;
       }
       
@@ -667,15 +667,32 @@ export default function AvailabilityPage() {
                           .map((schedule, i) => {
                           const grayStyle = 'bg-gray-200 border-gray-300 text-gray-500';
                           const duration = getDuration(schedule.startTime, schedule.endTime);
+                          let bgColor = '', textColor = '';
+                          if (duration <= 60) {
+                            bgColor = '#a78bfa22'; // pastel purple
+                            textColor = '#6d28d9';
+                          } else if (duration <= 120) {
+                            bgColor = '#34d39922'; // pastel green
+                            textColor = '#059669';
+                          } else {
+                            bgColor = '#fbbf2422'; // pastel orange
+                            textColor = '#b45309';
+                          }
                           return (
                             <div
                               key={i}
                               onClick={() => { if (isDayAvailable) { handleOpenEditModal(schedule) } }}
-                              className={`p-3 rounded-lg border transition-colors duration-200 ${getBlockHeightStyle(duration)} ${
-                                isDayAvailable
-                                  ? `${getBlockColorStyles(duration)} cursor-pointer`
-                                  : `${grayStyle} cursor-not-allowed`
+                              className={`p-3 rounded-md transition-colors duration-200 ${getBlockHeightStyle(duration)} ${
+                                isDayAvailable ? 'cursor-pointer' : `${grayStyle} cursor-not-allowed`
                               }`}
+                              style={isDayAvailable ? {
+                                background: bgColor,
+                                color: textColor,
+                                fontSize: '0.97rem',
+                                fontWeight: 500,
+                                border: 'none',
+                                boxShadow: 'none',
+                              } : {}}
                             >
                               <div className="flex justify-between items-start">
                                 <div>

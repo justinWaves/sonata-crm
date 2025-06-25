@@ -209,14 +209,13 @@ export default function AppointmentsPage() {
                     {appointment.serviceType.serviceType ? (
                       <span
                         style={{
-                          background: appointment.serviceType.serviceTypeColor,
+                          background: appointment.serviceType.serviceTypeColor + '22',
                           color: getDarkColor(appointment.serviceType.serviceTypeColor),
-                          border: `1px solid ${getDarkColor(appointment.serviceType.serviceTypeColor)}`,
-                          fontSize: '0.92rem',
-                          padding: '0.18rem 0.7rem',
-                          fontWeight: 600,
+                          fontSize: '0.88rem',
+                          padding: '0.10rem 0.55rem',
+                          fontWeight: 500,
                         }}
-                        className="inline-block text-nowrap rounded-lg"
+                        className="inline-block text-nowrap rounded-md"
                       >
                         {appointment.serviceType.serviceType}
                       </span>

@@ -296,21 +296,19 @@ export default function ServicesPage() {
                     <td className="py-4 px-6 text-center">
                       <span
                         style={service.serviceType ? {
-                          background: service.serviceTypeColor,
+                          background: service.serviceTypeColor + '22',
                           color: getDarkColor(service.serviceTypeColor),
-                          border: `1px solid ${getDarkColor(service.serviceTypeColor)}`,
-                          fontSize: '0.92rem',
-                          padding: '0.18rem 0.7rem',
-                          fontWeight: 600,
+                          fontSize: '0.88rem',
+                          padding: '0.10rem 0.55rem',
+                          fontWeight: 500,
                         } : {
-                          background: 'transparent',
+                          background: '#f3f4f6',
                           color: '#888',
-                          border: '1px solid #ccc',
-                          fontSize: '0.92rem',
-                          padding: '0.18rem 0.7rem',
-                          fontWeight: 600,
+                          fontSize: '0.88rem',
+                          padding: '0.10rem 0.55rem',
+                          fontWeight: 500,
                         }}
-                        className="inline-block text-nowrap rounded-lg"
+                        className="inline-block text-nowrap rounded-md"
                       >
                         {service.serviceType || 'No Type'}
                       </span>
@@ -547,14 +545,13 @@ export default function ServicesPage() {
                       <li key={t.type} className="flex items-center justify-between mb-2">
                         <span
                           style={{
-                            background: t.color,
+                            background: t.color + '22',
                             color: getDarkColor(t.color),
-                            border: `1px solid ${getDarkColor(t.color)}`,
-                            fontSize: '0.92rem',
-                            padding: '0.18rem 0.7rem',
-                            fontWeight: 600,
+                            fontSize: '0.88rem',
+                            padding: '0.10rem 0.55rem',
+                            fontWeight: 500,
                           }}
-                          className="inline-block rounded-lg mr-2"
+                          className="inline-block rounded-md mr-2"
                         >
                           {t.type}
                         </span>
