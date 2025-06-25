@@ -5,6 +5,7 @@ import FeaturesGrid from '@/components/FeaturesGrid';
 import PricingTable from '@/components/PricingTable';
 import SocialProof from '@/components/SocialProof';
 import CTASection from '@/components/CTASection';
+import Footer from '@/components/Footer';
 
 export default function Home() {
   return (
@@ -17,6 +18,7 @@ export default function Home() {
         <SocialProof />
         <CTASection />
       </main>
+      <Footer />
     </>
   );
 }

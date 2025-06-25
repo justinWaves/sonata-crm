@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { Toaster } from 'react-hot-toast';
 import ErrorBoundary from '@/components/ErrorBoundary';
-import Footer from '@/components/Footer';
 
 const geist = Geist({ subsets: ["latin"] });
 
@@ -24,7 +23,6 @@ export default function RootLayout({
           {children}
         </ErrorBoundary>
         <Toaster />
-        <Footer />
       </body>
     </html>
   );
