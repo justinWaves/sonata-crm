@@ -202,11 +202,11 @@ export default function AccountPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <div className="h-4 bg-gray-200 rounded w-12 mb-2"></div>
-                <div className="h-10 bg-gray-200 rounded"></div>
+              <div className="h-10 bg-gray-200 rounded"></div>
               </div>
               <div>
                 <div className="h-4 bg-gray-200 rounded w-16 mb-2"></div>
-                <div className="h-10 bg-gray-200 rounded"></div>
+              <div className="h-10 bg-gray-200 rounded"></div>
               </div>
             </div>
 
@@ -324,23 +324,23 @@ export default function AccountPage() {
 
   if (status === 'unauthenticated' || !session?.user?.id) {
     return (
-      <Card className="bg-white rounded-2xl shadow-xl p-8">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
-          <p className="text-base text-gray-500">You must be logged in to view this page.</p>
-        </div>
-      </Card>
+          <Card className="bg-white rounded-2xl shadow-xl p-8">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
+              <p className="text-base text-gray-500">You must be logged in to view this page.</p>
+            </div>
+          </Card>
     );
   }
 
   if (!profile) {
     return (
-      <Card className="bg-white rounded-2xl shadow-xl p-8">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Error</h2>
-          <p className="text-base text-gray-500">Unable to load profile.</p>
-        </div>
-      </Card>
+          <Card className="bg-white rounded-2xl shadow-xl p-8">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Error</h2>
+              <p className="text-base text-gray-500">Unable to load profile.</p>
+            </div>
+          </Card>
     );
   }
 

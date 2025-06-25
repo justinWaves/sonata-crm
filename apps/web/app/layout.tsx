@@ -2,6 +2,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { Toaster } from 'react-hot-toast';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 const geist = Geist({ subsets: ["latin"] });
 
@@ -18,7 +19,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`bg-gray-50 ${geist.className}`}>
-        {children}
+        <ErrorBoundary>
+          {children}
+        </ErrorBoundary>
         <Toaster />
       </body>
     </html>

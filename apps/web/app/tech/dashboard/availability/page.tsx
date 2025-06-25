@@ -7,6 +7,7 @@ import { MoonIcon } from '@/components/MoonIcon';
 import { EditTimeBlockModal, WeeklySchedule } from '@/components/EditTimeBlockModal';
 import { AddTimeBlockModal } from '@/components/AddTimeBlockModal';
 import { EditExceptionModal } from '@/components/EditExceptionModal';
+import { checkExceptionConflict, validateTimeRange } from '@/lib/utils';
 
 /*
 interface WeeklySchedule {
@@ -137,11 +138,41 @@ export default function AvailabilityPage() {
   const handleAddException = async () => {
     try {
       const startDate = new Date(newException.date);
-      const endDate = newException.endDate ? new Date(newException.endDate) : null;
+      const endDate = newException.endDate ? new Date(newException.endDate) : startDate;
       
       // Validate dates
-      if (endDate && endDate < startDate) {
+      if (endDate < startDate) {
         toast.error('End date cannot be before start date');
+        return;
+      }
+      
+      // Validate time range for available exceptions
+      if (newException.isAvailable && newException.startTime && newException.endTime) {
+        if (!validateTimeRange(newException.startTime, newException.endTime)) {
+          toast.error('End time must be after start time');
+          return;
+        }
+      }
+      
+      // Check for conflicts with existing exceptions
+      const conflict = checkExceptionConflict(
+        {
+          startDate,
+          endDate,
+          startTime: newException.isAvailable ? newException.startTime : null,
+          endTime: newException.isAvailable ? newException.endTime : null,
+          isAvailable: newException.isAvailable,
+        },
+        scheduleExceptions.map(e => ({
+          date: new Date(e.date),
+          startTime: e.startTime,
+          endTime: e.endTime,
+          isAvailable: e.isAvailable,
+        }))
+      );
+
+      if (conflict) {
+        toast.error(conflict.message);
         return;
       }
       
@@ -179,23 +210,6 @@ export default function AvailabilityPage() {
         setNewException({ date: '', endDate: '', startTime: '', endTime: '', isAvailable: true, reason: '' });
         setShowExceptionForm(false);
         toast.success(`Added ${exceptions.length} exception days successfully`);
-      } else {
-        // Single day exception
-      const response = await fetch('/api/schedule-exceptions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...newException,
-          technicianId: session?.user?.id,
-        }),
-      });
-
-      if (!response.ok) throw new Error('Failed to add exception');
-      
-      await fetchData();
-        setNewException({ date: '', endDate: '', startTime: '', endTime: '', isAvailable: true, reason: '' });
-      setShowExceptionForm(false);
-      toast.success('Exception added successfully');
       }
     } catch (error) {
       console.error('Error adding exception:', error);
@@ -714,6 +728,7 @@ export default function AvailabilityPage() {
           onClose={handleCloseEditExceptionModal}
           onSave={handleUpdateExceptionGroup}
           exceptionGroup={editingExceptionGroup}
+          allExceptions={scheduleExceptions}
         />
       )}
 
@@ -724,7 +739,7 @@ export default function AvailabilityPage() {
           onClose={handleCloseAddModal}
           onSave={handleAddSchedule}
         />
-      )}
+          )}
 
         {/* Exception Days Section */}
         <div className="bg-white rounded-2xl shadow-xl p-8">

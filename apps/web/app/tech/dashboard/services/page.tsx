@@ -249,50 +249,50 @@ export default function ServicesPage() {
 
   return (
     <>
-      <div className="bg-white rounded-2xl shadow-xl p-8">
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Services</h2>
-          <p className="text-base text-gray-500">Manage your service offerings and pricing</p>
-        </div>
+        <div className="bg-white rounded-2xl shadow-xl p-8">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Services</h2>
+            <p className="text-base text-gray-500">Manage your service offerings and pricing</p>
+          </div>
 
-        <div className="mb-6 flex justify-end">
-          <button 
-            onClick={handleAddNew}
+          <div className="mb-6 flex justify-end">
+            <button 
+              onClick={handleAddNew}
             className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer"
-          >
-            Add New Service
-          </button>
-        </div>
+            >
+              Add New Service
+            </button>
+          </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Service</th>
-                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Description</th>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Service</th>
+                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Description</th>
                 <th className="text-center py-4 px-6 text-sm font-semibold text-gray-600">Service Type</th>
-                <th className="text-right py-4 px-6 text-sm font-semibold text-gray-600">Price</th>
-                <th className="text-right py-4 px-6 text-sm font-semibold text-gray-600">Duration</th>
-                <th className="text-right py-4 px-6 text-sm font-semibold text-gray-600">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {services.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="text-center py-8 text-gray-500">
-                    No services found
-                  </td>
+                  <th className="text-right py-4 px-6 text-sm font-semibold text-gray-600">Price</th>
+                  <th className="text-right py-4 px-6 text-sm font-semibold text-gray-600">Duration</th>
+                  <th className="text-right py-4 px-6 text-sm font-semibold text-gray-600">Actions</th>
                 </tr>
-              ) : (
-                services.map((service) => (
-                  <tr 
-                    key={service.id}
-                    className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="py-4 px-6">
-                      <div className="text-sm font-medium text-gray-900">{service.name}</div>
+              </thead>
+              <tbody>
+                {services.length === 0 ? (
+                  <tr>
+                  <td colSpan={6} className="text-center py-8 text-gray-500">
+                      No services found
                     </td>
-                    <td className="py-4 px-6 text-sm text-gray-900">{service.description}</td>
+                  </tr>
+                ) : (
+                  services.map((service) => (
+                    <tr 
+                      key={service.id}
+                      className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="py-4 px-6">
+                        <div className="text-sm font-medium text-gray-900">{service.name}</div>
+                      </td>
+                      <td className="py-4 px-6 text-sm text-gray-900">{service.description}</td>
                     <td className="py-4 px-6 text-center">
                       <span
                         style={service.serviceType ? {
@@ -315,21 +315,21 @@ export default function ServicesPage() {
                         {service.serviceType || 'No Type'}
                       </span>
                     </td>
-                    <td className="py-4 px-6 text-sm text-gray-900 text-right font-medium">
-                      {formatPrice(service.price)}
-                    </td>
-                    <td className="py-4 px-6 text-sm text-gray-900 text-right">{service.duration}</td>
+                      <td className="py-4 px-6 text-sm text-gray-900 text-right font-medium">
+                        {formatPrice(service.price)}
+                      </td>
+                      <td className="py-4 px-6 text-sm text-gray-900 text-right">{service.duration}</td>
                     <td className="py-4 px-6 text-right text-nowrap">
-                      <button
-                        onClick={() => {
-                          setEditing(service);
-                          setIsAdding(false);
-                          setIsDeleting(false);
-                        }}
+                        <button
+                          onClick={() => {
+                            setEditing(service);
+                            setIsAdding(false);
+                            setIsDeleting(false);
+                          }}
                         className="text-blue-600 hover:text-blue-800 text-sm font-medium mr-4 cursor-pointer"
-                      >
-                        Edit
-                      </button>
+                        >
+                          Edit
+                        </button>
                       <button
                         onClick={() => {
                           setServiceToDelete(service);
@@ -339,12 +339,12 @@ export default function ServicesPage() {
                       >
                         Delete
                       </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
         </div>
       </div>
 
@@ -710,7 +710,7 @@ export default function ServicesPage() {
                 Delete
               </button>
             </div>
-          </div>
+    </div>
         </div>,
         document.body
       )}

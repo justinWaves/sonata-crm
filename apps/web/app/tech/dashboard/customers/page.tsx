@@ -413,73 +413,73 @@ export default function CustomersPage() {
 
   return (
     <>
-      <div className="bg-white rounded-2xl shadow-xl p-8">
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Customers</h2>
+        <div className="bg-white rounded-2xl shadow-xl p-8">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Customers</h2>
           <p className="text-base text-gray-500">View and manage your customers</p>
-        </div>
+          </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Name</th>
-                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Phone</th>
-                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Email</th>
-                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Address</th>
-                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Pianos</th>
-              </tr>
-            </thead>
-            <tbody>
-              {customers.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="text-center py-8 text-gray-500">
-                    No customers found
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Name</th>
+                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Phone</th>
+                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Email</th>
+                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Address</th>
+                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Pianos</th>
                 </tr>
-              ) : (
-                customers.map((customer) => (
-                  <tr 
-                    key={customer.id}
-                    className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
-                    onClick={() => openPianoModal(customer)}
-                  >
-                    <td className="py-4 px-6">
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold">
-                          {customer.firstName[0]}{customer.lastName[0]}
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {customer.firstName} {customer.lastName}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-4 px-6 text-sm text-gray-900">{customer.phone}</td>
-                    <td className="py-4 px-6 text-sm text-gray-900">{customer.email || '-'}</td>
-                    <td className="py-4 px-6 text-sm text-gray-900">
-                      {[customer.address, customer.city, customer.state, customer.zipCode].filter(Boolean).join(', ')}
-                    </td>
-                    <td className="py-4 px-6">
-                      <div className="text-sm text-gray-900">
-                        {(customer.pianos || []).length} Piano{(customer.pianos || []).length !== 1 ? 's' : ''}
-                      </div>
+              </thead>
+              <tbody>
+                {customers.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="text-center py-8 text-gray-500">
+                      No customers found
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ) : (
+                  customers.map((customer) => (
+                    <tr 
+                      key={customer.id}
+                      className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+                      onClick={() => openPianoModal(customer)}
+                    >
+                      <td className="py-4 px-6">
+                        <div className="flex items-center">
+                          <div className="w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold">
+                            {customer.firstName[0]}{customer.lastName[0]}
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">
+                              {customer.firstName} {customer.lastName}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-sm text-gray-900">{customer.phone}</td>
+                      <td className="py-4 px-6 text-sm text-gray-900">{customer.email || '-'}</td>
+                      <td className="py-4 px-6 text-sm text-gray-900">
+                        {[customer.address, customer.city, customer.state, customer.zipCode].filter(Boolean).join(', ')}
+                      </td>
+                      <td className="py-4 px-6">
+                        <div className="text-sm text-gray-900">
+                          {(customer.pianos || []).length} Piano{(customer.pianos || []).length !== 1 ? 's' : ''}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
 
-        <div className="mt-6 flex justify-end">
-          <button
-            onClick={() => setIsAddModalOpen(true)}
-            className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            Add Customer
-          </button>
+          <div className="mt-6 flex justify-end">
+            <button
+              onClick={() => setIsAddModalOpen(true)}
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Add Customer
+            </button>
         </div>
       </div>
 
@@ -650,8 +650,8 @@ export default function CustomersPage() {
                 <button type="button" onClick={() => setIsAddModalOpen(false)} className="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 font-medium shadow-sm">Cancel</button>
                 <button type="button" onClick={handleAddCustomer} className="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium shadow-sm hover:bg-blue-700">Save</button>
               </div>
-            </div>
           </div>
+        </div>
         </div>,
         document.body
       )}
@@ -740,8 +740,8 @@ export default function CustomersPage() {
                   Save
                 </button>
               </div>
-            </div>
           </div>
+        </div>
         </div>,
         document.body
       )}
@@ -831,8 +831,8 @@ export default function CustomersPage() {
                 <button type="button" onClick={() => setIsAddPianoModalOpen(false)} className="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 font-medium shadow-sm">Cancel</button>
                 <button type="button" onClick={handleAddPiano} className="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium shadow-sm hover:bg-blue-700">Save</button>
               </div>
-            </div>
           </div>
+        </div>
         </div>,
         document.body
       )}
@@ -915,8 +915,8 @@ export default function CustomersPage() {
                   Save
                 </button>
               </div>
-            </div>
           </div>
+        </div>
         </div>,
         document.body
       )}

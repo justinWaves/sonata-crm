@@ -82,7 +82,7 @@ router.delete('/:id', async (req, res) => {
 
       // Now delete the service type
       await tx.serviceType.delete({
-        where: { id },
+      where: { id },
       });
     });
 

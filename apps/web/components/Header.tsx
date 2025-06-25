@@ -16,9 +16,9 @@ export default function Header({ showTechLogin, onMenuClick }: { showTechLogin?:
       </button>
       {/* Logo centered on mobile, left on md+ */}
       <div className="flex-1 flex justify-center md:justify-start">
-        <Link href="/">
-          <Logo className="mr-3" width={180} height={180} />
-        </Link>
+      <Link href="/">
+        <Logo className="mr-3" width={180} height={180} />
+      </Link>
       </div>
       {showTechLogin && (
         <Link href="/tech/login">
