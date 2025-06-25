@@ -63,6 +63,51 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+// Change password endpoint
+router.patch('/:id/password', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { currentPassword, newPassword } = req.body;
+    
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Current password and new password are required' });
+    }
+    
+    if (newPassword.length < 8) {
+      return res.status(400).json({ error: 'New password must be at least 8 characters long' });
+    }
+    
+    // Get the technician to verify current password
+    const technician = await prisma.technician.findUnique({
+      where: { id },
+    });
+    
+    if (!technician) {
+      return res.status(404).json({ error: 'Technician not found' });
+    }
+    
+    // Verify current password
+    if (technician.password.trim() !== currentPassword.trim()) {
+      return res.status(401).json({ error: 'Current password is incorrect' });
+    }
+    
+    // Update password
+    const updated = await prisma.technician.update({
+      where: { id },
+      data: {
+        password: newPassword,
+      },
+    });
+    
+    // Remove password from response
+    const { password: _pw, ...technicianWithoutPassword } = updated;
+    res.json(technicianWithoutPassword);
+  } catch (err) {
+    console.error('Error changing password:', err);
+    res.status(500).json({ error: 'Failed to change password' });
+  }
+});
+
 // Add authentication endpoint
 router.post('/auth', async (req, res) => {
   try {
