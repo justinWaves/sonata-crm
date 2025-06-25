@@ -36,13 +36,31 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
     }
     setIsLoading(true);
     try {
-      // TODO: Implement password change API call
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulated API call
+      const response = await fetch('/api/technician', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currentPassword: formData.currentPassword,
+          newPassword: formData.newPassword,
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to change password');
+      }
+      
       toast.success('Password updated successfully');
+      setFormData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      });
       onClose();
     } catch (error) {
       console.error('Error changing password:', error);
-      toast.error('Failed to change password');
+      toast.error(error instanceof Error ? error.message : 'Failed to change password');
     } finally {
       setIsLoading(false);
     }
@@ -83,6 +101,7 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
               placeholder="Enter a new password"
               required
             />
+            <p className="mt-1 text-sm text-gray-500">Password must be at least 8 characters long</p>
           </div>
           <div>
             <label htmlFor="confirmPassword" className="block text-lg font-semibold text-gray-900 mb-2">
