@@ -38,7 +38,7 @@
     "@parcel/watcher": "^2.0.5"
   },
   "engines": {
-    "node": "20.x"
+    "node": ">=20.x"
   },
   "dependencies": {
     "lightningcss": "^1.30.1",
