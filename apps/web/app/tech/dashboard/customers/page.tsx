@@ -4,6 +4,7 @@ import { toast } from 'react-hot-toast';
 import { useReferralCode } from '../../../hooks/useReferralCode';
 import { createPortal } from 'react-dom';
 import Modal from '../../../../components/Modal';
+import { AddCustomerModal } from '../../../../components/AddCustomerModal';
 
 interface Piano {
   id: string;
@@ -567,68 +568,38 @@ export default function CustomersPage() {
       )}
 
       {isAddModalOpen && (
-        <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="Add New Customer">
-          <div className="space-y-4">
-            <div className="flex gap-2">
-              <div className="w-1/2">
-                <label className="block text-sm font-medium mb-1 text-gray-700">First Name</label>
-                <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={addForm.firstName} onChange={e => setAddForm(f => ({ ...f, firstName: e.target.value }))} />
-              </div>
-              <div className="w-1/2">
-                <label className="block text-sm font-medium mb-1 text-gray-700">Last Name</label>
-                <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={addForm.lastName} onChange={e => setAddForm(f => ({ ...f, lastName: e.target.value }))} />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700">Company (optional)</label>
-              <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={addForm.companyName} onChange={e => setAddForm(f => ({ ...f, companyName: e.target.value }))} />
-            </div>
-            <div className="flex gap-2">
-              <div className="w-1/2">
-                <label className="block text-sm font-medium mb-1 text-gray-700">Email</label>
-                <input type="email" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={addForm.email} onChange={e => setAddForm(f => ({ ...f, email: e.target.value }))} />
-              </div>
-              <div className="w-1/2">
-                <label className="block text-sm font-medium mb-1 text-gray-700">Phone</label>
-                <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={addForm.phone} onChange={e => setAddForm(f => ({ ...f, phone: e.target.value }))} />
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <div className="w-1/2">
-                <label className="block text-sm font-medium mb-1 text-gray-700">Address</label>
-                <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={addForm.address} onChange={e => setAddForm(f => ({ ...f, address: e.target.value }))} />
-              </div>
-              <div className="w-1/2">
-                <label className="block text-sm font-medium mb-1 text-gray-700">City</label>
-                <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={addForm.city} onChange={e => setAddForm(f => ({ ...f, city: e.target.value }))} />
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <div className="w-1/2">
-                <label className="block text-sm font-medium mb-1 text-gray-700">State</label>
-                <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={addForm.state} onChange={e => setAddForm(f => ({ ...f, state: e.target.value }))} />
-              </div>
-              <div className="w-1/2">
-                <label className="block text-sm font-medium mb-1 text-gray-700">Zip Code</label>
-                <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={addForm.zipCode} onChange={e => setAddForm(f => ({ ...f, zipCode: e.target.value }))} />
-              </div>
-            </div>
-            <div className="flex space-x-4">
-              <label className="flex items-center text-sm text-gray-700">
-                <input type="checkbox" className="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500" checked={addForm.textUpdates} onChange={e => setAddForm(f => ({ ...f, textUpdates: e.target.checked }))} />
-                Text Updates
-              </label>
-              <label className="flex items-center text-sm text-gray-700">
-                <input type="checkbox" className="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500" checked={addForm.emailUpdates} onChange={e => setAddForm(f => ({ ...f, emailUpdates: e.target.checked }))} />
-                Email Updates
-              </label>
-            </div>
-          </div>
-          <div className="flex justify-end space-x-2 pt-2">
-            <button type="button" onClick={() => setIsAddModalOpen(false)} className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg font-medium">Cancel</button>
-            <button type="button" onClick={handleAddCustomer} className="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium shadow-sm hover:bg-blue-700">Save</button>
-          </div>
-        </Modal>
+        <AddCustomerModal
+          isOpen={isAddModalOpen}
+          onClose={() => setIsAddModalOpen(false)}
+          onSave={async (customer) => {
+            const referralCode = generateReferralCode();
+            try {
+              const response = await fetch('/api/customers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...customer, referralCode }),
+              });
+              if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.error || 'Failed to add customer');
+              }
+              setIsAddModalOpen(false);
+              setAddForm({
+                firstName: '', lastName: '', companyName: '', email: '', phone: '', address: '', city: '', state: '', zipCode: '', textUpdates: false, emailUpdates: false,
+              });
+              const updatedCustomers = await fetchCustomers();
+              setSelectedCustomer((prev) => {
+                if (!prev) return prev;
+                const updated = updatedCustomers.find((c: Customer) => c.id === prev.id);
+                return updated || prev;
+              });
+              toast.success('Customer added!');
+            } catch (error) {
+              toast.error(error instanceof Error ? error.message : 'Failed to add customer');
+            }
+          }}
+          initialValues={addForm}
+        />
       )}
 
       {isEditModalOpen && editForm.id && (

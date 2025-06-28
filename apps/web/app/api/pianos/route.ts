@@ -4,6 +4,33 @@ import { authOptions } from '../auth/[...nextauth]/route';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
+export async function GET(request: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  try {
+    const { searchParams } = new URL(request.url);
+    const customerId = searchParams.get('customerId');
+    
+    let url = `${API_URL}/pianos?technicianId=${session.user.id}`;
+    if (customerId) {
+      url += `&customerId=${customerId}`;
+    }
+    
+    const res = await fetch(url);
+    const data = await res.json();
+    return NextResponse.json(data, { status: res.status });
+  } catch (error) {
+    console.error('Error fetching pianos:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch pianos' },
+      { status: 500 }
+    );
+  }
+}
+
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {

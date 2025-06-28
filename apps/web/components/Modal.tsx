@@ -16,7 +16,7 @@ export default function Modal({ isOpen, onClose, title, children, widthClass = '
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-      <div className={`relative w-full ${widthClass} bg-white rounded-2xl shadow-xl p-8`}>
+      <div className={`relative w-full ${widthClass} bg-white rounded-2xl shadow-xl p-8 max-h-[90vh] overflow-y-auto`}>
         <button
           onClick={onClose}
           aria-label="Close"
