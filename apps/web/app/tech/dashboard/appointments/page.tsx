@@ -280,8 +280,8 @@ export default function AppointmentsPage() {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-8">
-      <div className="mb-8">
+        <div className="bg-white rounded-2xl shadow-xl p-8">
+          <div className="mb-8">
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-2xl font-bold text-gray-900">Appointments</h2>
           <button
@@ -291,57 +291,57 @@ export default function AppointmentsPage() {
             Add Appointment
           </button>
         </div>
-        <p className="text-base text-gray-500">View and manage your upcoming appointments</p>
-      </div>
+            <p className="text-base text-gray-500">View and manage your upcoming appointments</p>
+          </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-gray-200">
-              <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Date & Time</th>
-              <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Customer</th>
-              <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Service</th>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Date & Time</th>
+                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Customer</th>
+                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Service</th>
               <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Type</th>
-              <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Location</th>
-              <th className="text-right py-4 px-6 text-sm font-semibold text-gray-600">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {appointments.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="text-center py-8 text-gray-500">
-                  No appointments found
-                </td>
-              </tr>
-            ) : (
-              appointments.map((appointment) => (
-                <tr
-                  key={appointment.id}
+                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Location</th>
+                  <th className="text-right py-4 px-6 text-sm font-semibold text-gray-600">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {appointments.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="text-center py-8 text-gray-500">
+                      No appointments found
+                    </td>
+                  </tr>
+                ) : (
+                  appointments.map((appointment) => (
+                    <tr 
+                      key={appointment.id}
                   className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
                   onClick={() => setSelectedAppointment(appointment)}
-                >
-                  <td className="py-4 px-6">
-                    <div className="text-sm font-medium text-gray-900">
-                      {formatDate(appointment.scheduledAt)}
-                    </div>
-                    <div className="text-sm text-gray-500">
+                    >
+                      <td className="py-4 px-6">
+                        <div className="text-sm font-medium text-gray-900">
+                          {formatDate(appointment.scheduledAt)}
+                        </div>
+                        <div className="text-sm text-gray-500">
                       {appointment.timeSlot ? `${appointment.timeSlot.blockName} (${formatTime(appointment.timeSlot.startTime)})` : formatTime(appointment.scheduledAt)}
-                    </div>
-                  </td>
-                  <td className="py-4 px-6">
-                    <div className="text-sm font-medium text-gray-900">
-                      {appointment.customer.firstName} {appointment.customer.lastName}
-                    </div>
-                  </td>
-                  <td className="py-4 px-6">
-                    <div className="text-sm font-medium text-gray-900">
-                      {appointment.serviceType.name}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {appointment.serviceType.duration}
-                    </div>
-                  </td>
-                  <td className="py-4 px-6">
+                        </div>
+                      </td>
+                      <td className="py-4 px-6">
+                        <div className="text-sm font-medium text-gray-900">
+                          {appointment.customer.firstName} {appointment.customer.lastName}
+                        </div>
+                      </td>
+                      <td className="py-4 px-6">
+                        <div className="text-sm font-medium text-gray-900">
+                          {appointment.serviceType.name}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {appointment.serviceType.duration}
+                        </div>
+                      </td>
+                      <td className="py-4 px-6">
                     {appointment.serviceType.serviceType ? (
                       <span
                         style={{
@@ -358,40 +358,40 @@ export default function AppointmentsPage() {
                     ) : (
                       <span className="text-sm text-gray-500">N/A</span>
                     )}
-                  </td>
-                  <td className="py-4 px-6">
-                    <div className="text-sm text-gray-900">
-                      {appointment.customer.address}
-                    </div>
-                  </td>
-                  <td className="py-4 px-6 text-right">
-                    <div className="flex justify-end space-x-3">
-                      <button
+                      </td>
+                      <td className="py-4 px-6">
+                        <div className="text-sm text-gray-900">
+                          {appointment.customer.address}
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-right">
+                        <div className="flex justify-end space-x-3">
+                          <button
                         onClick={(e) => {
                           e.stopPropagation();
                           setEditingAppointment(appointment);
                         }}
-                        className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                      >
+                            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                          >
                         Edit
-                      </button>
-                      <button
+                          </button>
+                          <button
                         onClick={(e) => {
                           e.stopPropagation();
                           setDeletingAppointment(appointment);
                         }}
                         className="text-red-600 hover:text-red-800 text-sm font-medium"
-                      >
+                          >
                         Delete
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
 
       <CustomerSelectionModal
         isOpen={isCustomerSelectionModalOpen}
@@ -536,9 +536,9 @@ export default function AppointmentsPage() {
             >
               Edit Appointment
             </button>
-          </div>
+      </div>
         </Modal>
       )}
     </div>
   );
-}
+} 

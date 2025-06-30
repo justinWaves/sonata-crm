@@ -5,6 +5,13 @@ import { useReferralCode } from '../../../hooks/useReferralCode';
 import { createPortal } from 'react-dom';
 import Modal from '../../../../components/Modal';
 import { AddCustomerModal } from '../../../../components/AddCustomerModal';
+import { CustomerTableProvider } from '../../../../components/CustomerTableContext';
+import SearchBar from '../../../../components/SearchBar';
+import { CustomerTable } from '../../../../components/CustomerTable';
+import BulkBar from '../../../../components/BulkBar';
+import CustomerCardList from '../../../../components/CustomerCardList';
+import Pagination from '../../../../components/Pagination';
+import { highlightMatch } from '../../../../lib/utils';
 
 interface Piano {
   id: string;
@@ -98,6 +105,9 @@ export default function CustomersPage() {
   const [showDeletePianoConfirm, setShowDeletePianoConfirm] = useState(false);
   const [originalEditPianoData, setOriginalEditPianoData] = useState<any>(null);
   const [deletingPiano, setDeletingPiano] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 15;
+  const [searchTerm, setSearchTerm] = useState('');
 
   const generateReferralCode = useReferralCode();
 
@@ -230,10 +240,10 @@ export default function CustomersPage() {
   };
 
   const handleDeleteCustomer = async () => {
-    if (!editForm.id) return;
+    if (!selectedCustomer?.id) return;
     setDeleting(true);
     try {
-      const response = await fetch(`/api/customers?id=${editForm.id}`, {
+      const response = await fetch(`/api/customers?id=${selectedCustomer.id}`, {
         method: 'DELETE',
       });
       if (!response.ok) {
@@ -358,525 +368,136 @@ export default function CustomersPage() {
     }
   };
 
-  if (loading) {
+  const filteredCustomers = customers.filter((customer) => {
+    const term = searchTerm.toLowerCase();
     return (
-      <div className="bg-white rounded-2xl shadow-xl p-8">
-        <div className="mb-8">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-2"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Name</th>
-                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Phone</th>
-                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Email</th>
-                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Address</th>
-                <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Pianos</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[1, 2, 3].map((i) => (
-                <tr key={i} className="border-b border-gray-100">
-                  <td className="py-4 px-6">
-                    <div className="flex items-center">
-                      <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
-                      <div className="ml-4">
-                        <div className="h-4 bg-gray-200 rounded w-24"></div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-4 px-6">
-                    <div className="h-4 bg-gray-200 rounded w-20"></div>
-                  </td>
-                  <td className="py-4 px-6">
-                    <div className="h-4 bg-gray-200 rounded w-28"></div>
-                  </td>
-                  <td className="py-4 px-6">
-                    <div className="h-4 bg-gray-200 rounded w-32"></div>
-                  </td>
-                  <td className="py-4 px-6">
-                    <div className="h-4 bg-gray-200 rounded w-16"></div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="mt-6 flex justify-end">
-          <div className="h-10 bg-gray-200 rounded w-32"></div>
-        </div>
-      </div>
+      customer.firstName.toLowerCase().includes(term) ||
+      customer.lastName.toLowerCase().includes(term) ||
+      (customer.email?.toLowerCase() || '').includes(term) ||
+      customer.phone.includes(term) ||
+      customer.address.toLowerCase().includes(term) ||
+      (customer.city?.toLowerCase() || '').includes(term) ||
+      (customer.state?.toLowerCase() || '').includes(term) ||
+      (customer.zipCode?.toLowerCase() || '').includes(term)
     );
-  }
+  });
+  const totalPages = Math.ceil(filteredCustomers.length / pageSize);
+  const paginatedCustomers = filteredCustomers.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return (
-    <>
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Customers</h2>
-          <p className="text-base text-gray-500">View and manage your customers</p>
+    <CustomerTableProvider>
+      <div
+        className="fixed top-[56px] z-30 flex items-center justify-between px-8 py-4 bg-opacity-0 backdrop-blur-sm w-full left-0 md:left-[168px] md:w-[calc(100vw-168px)]"
+        style={{ minWidth: 0 }}
+      >
+        <div className="max-w-md w-full">
+          <SearchBar value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
           </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Name</th>
-                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Phone</th>
-                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Email</th>
-                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Address</th>
-                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600">Pianos</th>
-                </tr>
-              </thead>
-              <tbody>
-                {customers.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="text-center py-8 text-gray-500">
-                      No customers found
-                    </td>
-                  </tr>
-                ) : (
-                  customers.map((customer) => (
-                    <tr 
-                      key={customer.id}
-                      className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
-                      onClick={() => openPianoModal(customer)}
-                    >
-                      <td className="py-4 px-6">
-                        <div className="flex items-center">
-                          <div className="w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold">
-                            {customer.firstName[0]}{customer.lastName[0]}
-                          </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">
-                              {customer.firstName} {customer.lastName}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6 text-sm text-gray-900">{customer.phone}</td>
-                      <td className="py-4 px-6 text-sm text-gray-900">{customer.email || '-'}</td>
-                      <td className="py-4 px-6 text-sm text-gray-900">
-                        {[customer.address, customer.city, customer.state, customer.zipCode].filter(Boolean).join(', ')}
-                      </td>
-                      <td className="py-4 px-6">
-                        <div className="text-sm text-gray-900">
-                          {(customer.pianos || []).length} Piano{(customer.pianos || []).length !== 1 ? 's' : ''}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="mt-6 flex justify-end">
             <button
               onClick={() => setIsAddModalOpen(true)}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ml-4 text-nowrap"
             >
               Add Customer
             </button>
         </div>
-      </div>
-
-      {isModalOpen && selectedCustomer && (
-        <Modal isOpen={isModalOpen} onClose={closeModal} title={selectedCustomer.firstName + ' ' + selectedCustomer.lastName} widthClass="max-w-2xl">
-          <div className="flex items-center space-x-4 mb-6">
-            <div className="w-16 h-16 min-w-[4rem] min-h-[4rem] rounded-full bg-blue-100 flex items-center justify-center text-2xl text-blue-600 font-bold">
-              {selectedCustomer.firstName[0]}{selectedCustomer.lastName[0]}
-            </div>
-            <div>
-              {selectedCustomer.companyName && (
-                <div className="text-sm text-gray-500 font-medium">{selectedCustomer.companyName}</div>
-              )}
-              <div className="text-sm text-gray-500 mt-1">
-                {selectedCustomer.email} • {selectedCustomer.phone}
-              </div>
-              <div className="text-sm text-gray-500 mt-1">
-                {[
-                  selectedCustomer.address,
-                  selectedCustomer.city,
-                  selectedCustomer.state,
-                  selectedCustomer.zipCode
-                ].filter(Boolean).join(', ')}
-              </div>
-              {selectedCustomer.referralCode && (
-                <div className="text-xs text-gray-400 mt-1">Referral: {selectedCustomer.referralCode}</div>
-              )}
-              <div className="flex space-x-2 mt-1">
-                {selectedCustomer.textUpdates && (
-                  <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded">Text Updates</span>
-                )}
-                {selectedCustomer.emailUpdates && (
-                  <span className="text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded">Email Updates</span>
-                )}
-              </div>
-            </div>
-          </div>
-          <div className="flex justify-end mb-4">
-            <button
-              onClick={() => openEditModal(selectedCustomer)}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              Edit Customer
-            </button>
-          </div>
-          <hr className="my-4 border-gray-200" />
-          <div className="space-y-4">
-            <div className="flex justify-between items-center mb-2">
-              <h4 className="text-lg font-semibold text-gray-900">Pianos</h4>
-              <button
-                onClick={() => setIsAddPianoModalOpen(true)}
-                className="inline-flex items-center px-3 py-1 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                Add Piano
-              </button>
-            </div>
-            {selectedCustomer.pianos?.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">No pianos added yet</p>
-            ) : (
-              <ul className="divide-y divide-gray-200">
-                {selectedCustomer.pianos?.map((piano) => (
-                  <li key={piano.id} className="py-4 flex items-center justify-between">
-                    <div>
-                      <div className="font-medium text-gray-900">{piano.type} {piano.brand && `- ${piano.brand}`}{piano.model && ` ${piano.model}`}{piano.year && ` (${piano.year})`}</div>
-                      <div className="text-xs text-gray-500">Serial: {piano.serialNumber || 'N/A'}</div>
-                      <div className="text-xs text-gray-500">Last Service: {piano.lastServiceDate ? new Date(piano.lastServiceDate).toLocaleDateString() : 'Never'}</div>
-                      {piano.notes && <div className="text-xs text-gray-400 mt-1">{piano.notes}</div>}
-                    </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openEditPianoModal(piano);
-                      }}
-                      className="text-gray-400 hover:text-blue-600 text-sm font-medium border border-gray-200 rounded px-3 py-1"
-                    >
-                      Edit
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </Modal>
-      )}
-
-      {isAddModalOpen && (
+      <div className='pt-[44px] w-fit md:pr-8'>
+        <div className="hidden md:block">
+          <CustomerTable
+            customers={paginatedCustomers}
+            loading={loading}
+            selectedCustomer={selectedCustomer}
+            setSelectedCustomer={setSelectedCustomer}
+            isModalOpen={isModalOpen}
+            setIsModalOpen={setIsModalOpen}
+            isAddModalOpen={isAddModalOpen}
+            setIsAddModalOpen={setIsAddModalOpen}
+            isEditModalOpen={isEditModalOpen}
+            setIsEditModalOpen={setIsEditModalOpen}
+            isAddPianoModalOpen={isAddPianoModalOpen}
+            setIsAddPianoModalOpen={setIsAddPianoModalOpen}
+            isEditPianoModalOpen={isEditPianoModalOpen}
+            setIsEditPianoModalOpen={setIsEditPianoModalOpen}
+            addForm={addForm}
+            setAddForm={setAddForm}
+            editForm={editForm}
+            setEditForm={setEditForm}
+            showDeleteConfirm={showDeleteConfirm}
+            setShowDeleteConfirm={setShowDeleteConfirm}
+            deleting={deleting}
+            handleAddCustomer={handleAddCustomer}
+            handleEditCustomer={handleEditCustomer}
+            handleDeleteCustomer={handleDeleteCustomer}
+            openPianoModal={openPianoModal}
+            closeModal={closeModal}
+            openEditModal={openEditModal}
+            searchTerm={searchTerm}
+            highlightMatch={highlightMatch}
+          />
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </div>
+        <div className="flex flex-col gap-2 md:hidden">
+          <CustomerCardList
+            customers={paginatedCustomers}
+            openEditModal={openEditModal}
+            setShowDeleteConfirm={setShowDeleteConfirm}
+            setSelectedCustomer={setSelectedCustomer}
+            searchTerm={searchTerm}
+            highlightMatch={highlightMatch}
+            isLoading={loading}
+          />
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </div>
+        <BulkBar customers={customers} fetchCustomers={fetchCustomers} setCustomers={setCustomers} />
         <AddCustomerModal
           isOpen={isAddModalOpen}
           onClose={() => setIsAddModalOpen(false)}
-          onSave={async (customer) => {
-            const referralCode = generateReferralCode();
-            try {
-              const response = await fetch('/api/customers', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...customer, referralCode }),
-              });
-              if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.error || 'Failed to add customer');
-              }
-              setIsAddModalOpen(false);
-              setAddForm({
-                firstName: '', lastName: '', companyName: '', email: '', phone: '', address: '', city: '', state: '', zipCode: '', textUpdates: false, emailUpdates: false,
-              });
-              const updatedCustomers = await fetchCustomers();
-              setSelectedCustomer((prev) => {
-                if (!prev) return prev;
-                const updated = updatedCustomers.find((c: Customer) => c.id === prev.id);
-                return updated || prev;
-              });
-              toast.success('Customer added!');
-            } catch (error) {
-              toast.error(error instanceof Error ? error.message : 'Failed to add customer');
-            }
+          onSave={(newCustomer: any) => {
+            const safeCustomer = {
+              id: newCustomer.id,
+              firstName: newCustomer.firstName,
+              lastName: newCustomer.lastName,
+              companyName: newCustomer.companyName ?? null,
+              email: newCustomer.email ?? null,
+              phone: newCustomer.phone,
+              address: newCustomer.address,
+              city: newCustomer.city ?? null,
+              state: newCustomer.state ?? null,
+              zipCode: newCustomer.zipCode ?? null,
+              textUpdates: newCustomer.textUpdates ?? false,
+              emailUpdates: newCustomer.emailUpdates ?? false,
+              referralCode: newCustomer.referralCode ?? null,
+              createdAt: newCustomer.createdAt || new Date().toISOString(),
+              updatedAt: newCustomer.updatedAt || new Date().toISOString(),
+              pianos: Array.isArray(newCustomer.pianos) ? newCustomer.pianos : [],
+            };
+            setCustomers(prev => [safeCustomer, ...prev]);
+            setIsAddModalOpen(false);
+            toast.success('Customer added!');
           }}
-          initialValues={addForm}
         />
-      )}
-
-      {isEditModalOpen && editForm.id && (
-        <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Customer">
-          <div className="space-y-4">
-            <div className="flex gap-2">
-              <div className="w-1/2">
-                <label className="block text-sm font-medium mb-1 text-gray-700">First Name</label>
-                <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={editForm.firstName} onChange={e => setEditForm(f => ({ ...f, firstName: e.target.value }))} />
-              </div>
-              <div className="w-1/2">
-                <label className="block text-sm font-medium mb-1 text-gray-700">Last Name</label>
-                <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={editForm.lastName} onChange={e => setEditForm(f => ({ ...f, lastName: e.target.value }))} />
-              </div>
+        {isEditModalOpen && (
+          <AddCustomerModal
+            isOpen={isEditModalOpen}
+            onClose={() => setIsEditModalOpen(false)}
+            onSave={(updatedCustomer) => {
+              setIsEditModalOpen(false);
+              setCustomers((prev) => prev.map((c) => c.id === updatedCustomer.id ? { ...c, ...updatedCustomer } : c));
+              setSelectedCustomer((prev) => prev && prev.id === updatedCustomer.id ? { ...prev, ...updatedCustomer } : prev);
+              toast.success('Customer updated!');
+            }}
+            initialValues={editForm}
+            editingCustomerId={editForm.id}
+          />
+        )}
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700">Company (optional)</label>
-              <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={editForm.companyName} onChange={e => setEditForm(f => ({ ...f, companyName: e.target.value }))} />
-            </div>
-            <div className="flex gap-2">
-              <div className="w-1/2">
-                <label className="block text-sm font-medium mb-1 text-gray-700">Email</label>
-                <input type="email" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={editForm.email} onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))} />
-              </div>
-              <div className="w-1/2">
-                <label className="block text-sm font-medium mb-1 text-gray-700">Phone</label>
-                <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={editForm.phone} onChange={e => setEditForm(f => ({ ...f, phone: e.target.value }))} />
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <div className="w-1/2">
-                <label className="block text-sm font-medium mb-1 text-gray-700">Address</label>
-                <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={editForm.address} onChange={e => setEditForm(f => ({ ...f, address: e.target.value }))} />
-              </div>
-              <div className="w-1/2">
-                <label className="block text-sm font-medium mb-1 text-gray-700">City</label>
-                <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={editForm.city} onChange={e => setEditForm(f => ({ ...f, city: e.target.value }))} />
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <div className="w-1/2">
-                <label className="block text-sm font-medium mb-1 text-gray-700">State</label>
-                <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={editForm.state} onChange={e => setEditForm(f => ({ ...f, state: e.target.value }))} />
-              </div>
-              <div className="w-1/2">
-                <label className="block text-sm font-medium mb-1 text-gray-700">Zip Code</label>
-                <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={editForm.zipCode} onChange={e => setEditForm(f => ({ ...f, zipCode: e.target.value }))} />
-              </div>
-            </div>
-            <div className="flex gap-4">
-              <label className="flex items-center text-sm text-gray-700">
-                <input type="checkbox" className="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500" checked={editForm.textUpdates} onChange={e => setEditForm(f => ({ ...f, textUpdates: e.target.checked }))} />
-                Text Updates
-              </label>
-              <label className="flex items-center text-sm text-gray-700">
-                <input type="checkbox" className="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500" checked={editForm.emailUpdates} onChange={e => setEditForm(f => ({ ...f, emailUpdates: e.target.checked }))} />
-                Email Updates
-              </label>
-            </div>
-          </div>
-          <div className="flex items-center pt-2">
-            <button
-              type="button"
-              className="text-red-600 hover:underline font-medium mr-4"
-              onClick={() => setShowDeleteConfirm(true)}
-            >
-              Delete Customer
-            </button>
-            <span className="flex-1"></span>
-            <button
-              type="button"
-              onClick={() => setIsEditModalOpen(false)}
-              className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg font-medium"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              className="ml-2 px-4 py-2 rounded-lg bg-blue-600 text-white font-medium shadow-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={!isEditFormChanged()}
-              onClick={handleEditCustomer}
-            >
-              Save
-            </button>
-          </div>
-        </Modal>
-      )}
-
-      {showDeleteConfirm && (
-        <Modal isOpen={showDeleteConfirm} onClose={() => setShowDeleteConfirm(false)} title="Are you sure?">
-          <div className="flex flex-col items-center">
-            <p className="text-gray-600 mb-6 text-center">This will permanently delete the customer and all associated pianos and appointments.</p>
-            <div className="flex space-x-4">
-              <button
-                type="button"
-                onClick={() => setShowDeleteConfirm(false)}
-                className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg font-medium"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="px-4 py-2 rounded-lg bg-red-600 text-white font-medium shadow-sm hover:bg-red-700"
-                onClick={handleDeleteCustomer}
-                disabled={deleting}
-              >
-                {deleting ? 'Deleting...' : 'Delete'}
-              </button>
-            </div>
-          </div>
-        </Modal>
-      )}
-
-      {isAddPianoModalOpen && (
-        <Modal isOpen={isAddPianoModalOpen} onClose={() => setIsAddPianoModalOpen(false)} title={`Add Piano for ${selectedCustomer?.firstName} ${selectedCustomer?.lastName}`}>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700">Type <span className="text-red-500">*</span></label>
-              <select
-                required
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                value={addPianoForm.type}
-                onChange={e => setAddPianoForm(f => ({ ...f, type: e.target.value }))}
-              >
-                <option value="">Select type</option>
-                <option value="Grand">Grand</option>
-                <option value="Upright">Upright</option>
-                <option value="Console">Console</option>
-                <option value="Spinet">Spinet</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-            <div className="flex gap-2">
-              <div className="w-1/2">
-                <label className="block text-sm font-medium mb-1 text-gray-700">Brand</label>
-                <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={addPianoForm.brand} onChange={e => setAddPianoForm(f => ({ ...f, brand: e.target.value }))} />
-              </div>
-              <div className="w-1/2">
-                <label className="block text-sm font-medium mb-1 text-gray-700">Model</label>
-                <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={addPianoForm.model} onChange={e => setAddPianoForm(f => ({ ...f, model: e.target.value }))} />
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <div className="w-1/2">
-                <label className="block text-sm font-medium mb-1 text-gray-700">Year</label>
-                <input type="number" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={addPianoForm.year} onChange={e => setAddPianoForm(f => ({ ...f, year: e.target.value }))} />
-              </div>
-              <div className="w-1/2">
-                <label className="block text-sm font-medium mb-1 text-gray-700">Serial Number</label>
-                <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={addPianoForm.serialNumber} onChange={e => setAddPianoForm(f => ({ ...f, serialNumber: e.target.value }))} />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700">Notes</label>
-              <textarea className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={addPianoForm.notes} onChange={e => setAddPianoForm(f => ({ ...f, notes: e.target.value }))} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700">Last Service</label>
-              <input
-                type="date"
-                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={addPianoForm.lastServiceDate}
-                onChange={e => setAddPianoForm(f => ({ ...f, lastServiceDate: e.target.value }))}
-              />
-            </div>
-          </div>
-          <div className="flex justify-end space-x-2 pt-2">
-            <button type="button" onClick={() => setIsAddPianoModalOpen(false)} className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg font-medium">Cancel</button>
-            <button type="button" onClick={handleAddPiano} className="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium shadow-sm hover:bg-blue-700">Save</button>
-          </div>
-        </Modal>
-      )}
-
-      {isEditPianoModalOpen && editPianoForm.id && (
-        <Modal isOpen={isEditPianoModalOpen} onClose={() => setIsEditPianoModalOpen(false)} title="Edit Piano">
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700">Type <span className="text-red-500">*</span></label>
-              <select
-                required
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                value={editPianoForm.type}
-                onChange={e => setEditPianoForm(f => ({ ...f, type: e.target.value }))}
-              >
-                <option value="">Select type</option>
-                <option value="Grand">Grand</option>
-                <option value="Upright">Upright</option>
-                <option value="Console">Console</option>
-                <option value="Spinet">Spinet</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-            <div className="flex gap-2">
-              <div className="w-1/2">
-                <label className="block text-sm font-medium mb-1 text-gray-700">Brand</label>
-                <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={editPianoForm.brand} onChange={e => setEditPianoForm(f => ({ ...f, brand: e.target.value }))} />
-              </div>
-              <div className="w-1/2">
-                <label className="block text-sm font-medium mb-1 text-gray-700">Model</label>
-                <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={editPianoForm.model} onChange={e => setEditPianoForm(f => ({ ...f, model: e.target.value }))} />
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <div className="w-1/2">
-                <label className="block text-sm font-medium mb-1 text-gray-700">Year</label>
-                <input type="number" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={editPianoForm.year} onChange={e => setEditPianoForm(f => ({ ...f, year: e.target.value }))} />
-              </div>
-              <div className="w-1/2">
-                <label className="block text-sm font-medium mb-1 text-gray-700">Serial Number</label>
-                <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={editPianoForm.serialNumber} onChange={e => setEditPianoForm(f => ({ ...f, serialNumber: e.target.value }))} />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700">Last Service</label>
-              <input
-                type="date"
-                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={editPianoForm.lastServiceDate}
-                onChange={e => setEditPianoForm(f => ({ ...f, lastServiceDate: e.target.value }))}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700">Notes</label>
-              <textarea className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={editPianoForm.notes} onChange={e => setEditPianoForm(f => ({ ...f, notes: e.target.value }))} />
-            </div>
-          </div>
-          <div className="flex items-center pt-2">
-            <button
-              type="button"
-              className="text-red-600 hover:underline font-medium mr-4"
-              onClick={() => setShowDeletePianoConfirm(true)}
-            >
-              Delete Piano
-            </button>
-            <span className="flex-1"></span>
-            <button
-              type="button"
-              className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg font-medium"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              className="ml-2 px-4 py-2 rounded-lg bg-blue-600 text-white font-medium shadow-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={!isEditPianoFormChanged()}
-              onClick={handleEditPiano}
-            >
-              Save
-            </button>
-          </div>
-        </Modal>
-      )}
-
-      {showDeletePianoConfirm && (
-        <Modal isOpen={showDeletePianoConfirm} onClose={() => setShowDeletePianoConfirm(false)} title="Are you sure?">
-          <div className="flex flex-col items-center">
-            <p className="text-gray-600 mb-6 text-center">This will permanently delete this piano and all associated service records.</p>
-            <div className="flex space-x-4">
-              <button
-                type="button"
-                onClick={() => setShowDeletePianoConfirm(false)}
-                className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg font-medium"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="px-4 py-2 rounded-lg bg-red-600 text-white font-medium shadow-sm hover:bg-red-700"
-                onClick={handleDeletePiano}
-                disabled={deletingPiano}
-              >
-                {deletingPiano ? 'Deleting...' : 'Delete'}
-              </button>
-            </div>
-          </div>
-        </Modal>
-      )}
-    </>
+    </CustomerTableProvider>
   );
 } 

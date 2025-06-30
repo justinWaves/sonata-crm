@@ -36,15 +36,15 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="w-full min-w-0 md:min-w-[1024px]">
+    <div className="min-w-0 md:min-w-[1024px]">
       <Header onMenuClick={() => setSidebarOpen(true)} />
       <div className="flex h-screen bg-gray-50 pt-[56px]">
         {/* Sidebar */}
         <Sidebar show="desktop" navItems={navItems} />
         <Sidebar show="mobile" open={sidebarOpen} onClose={() => setSidebarOpen(false)} navItems={navItems} />
         {/* Main content */}
-        <main className="flex-1 flex flex-col overflow-y-auto">
-          <div className="max-w-7xl mx-auto w-full p-8">
+        <main className="flex-1 flex flex-col  overflow-y-auto">
+          <div className=" mx-auto w-full p-8">
             {children}
           </div>
         </main>

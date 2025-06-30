@@ -24,6 +24,7 @@ interface AddCustomerModalProps {
   onClose: () => void;
   onSave: (customer: Customer) => void;
   initialValues?: Partial<Omit<Customer, 'id'>>;
+  editingCustomerId?: string;
 }
 
 export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
@@ -31,6 +32,7 @@ export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
   onClose,
   onSave,
   initialValues = {},
+  editingCustomerId,
 }) => {
   const [form, setForm] = useState({
     firstName: initialValues.firstName || '',
@@ -48,6 +50,44 @@ export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pianos, setPianos] = useState<any[]>([]);
   const [isAddPianoModalOpen, setIsAddPianoModalOpen] = useState(false);
+
+  // Store initial form for dirty check
+  const initialForm = React.useRef(form);
+  React.useEffect(() => {
+    if (isOpen) {
+      setForm({
+        firstName: initialValues.firstName || '',
+        lastName: initialValues.lastName || '',
+        companyName: initialValues.companyName || '',
+        email: initialValues.email || '',
+        phone: initialValues.phone || '',
+        address: initialValues.address || '',
+        city: initialValues.city || '',
+        state: initialValues.state || '',
+        zipCode: initialValues.zipCode || '',
+        textUpdates: initialValues.textUpdates || false,
+        emailUpdates: initialValues.emailUpdates || false,
+      });
+      initialForm.current = {
+        firstName: initialValues.firstName || '',
+        lastName: initialValues.lastName || '',
+        companyName: initialValues.companyName || '',
+        email: initialValues.email || '',
+        phone: initialValues.phone || '',
+        address: initialValues.address || '',
+        city: initialValues.city || '',
+        state: initialValues.state || '',
+        zipCode: initialValues.zipCode || '',
+        textUpdates: initialValues.textUpdates || false,
+        emailUpdates: initialValues.emailUpdates || false,
+      };
+    }
+    // eslint-disable-next-line
+  }, [isOpen, editingCustomerId]);
+
+  const isDirty = Object.keys(form).some(
+    (key) => (form as any)[key] !== (initialForm.current as any)[key]
+  );
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setForm(prev => ({ ...prev, [field]: value }));
@@ -72,7 +112,24 @@ export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
       setErrors(prev => ({ ...prev, form: 'Please fill out all required fields.' }));
       return;
     }
-    // 1. Create customer
+    if (editingCustomerId) {
+      // Edit mode: PUT request
+      const response = await fetch('/api/customers', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...form, id: editingCustomerId }),
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        setErrors({ form: data.error || 'Failed to update customer' });
+        return;
+      }
+      const updatedCustomer = await response.json();
+      setErrors({});
+      onSave(updatedCustomer);
+      return;
+    }
+    // Add mode: POST request
     const response = await fetch('/api/customers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -129,7 +186,7 @@ export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Add New Customer" widthClass="max-w-2xl">
+    <Modal isOpen={isOpen} onClose={handleClose} title={editingCustomerId ? 'Edit Customer' : 'Add New Customer'} widthClass="max-w-2xl">
       <div className="space-y-4 max-h-[80vh] overflow-y-auto px-4">
         <div className="flex flex-col md:flex-row gap-2">
           <div className="w-full md:w-1/2">
@@ -245,9 +302,9 @@ export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
           type="button"
           onClick={handleSave}
           className="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium shadow-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={!requiredFieldsFilled}
+          disabled={editingCustomerId ? !isDirty || !requiredFieldsFilled : !requiredFieldsFilled}
         >
-          Save
+          {editingCustomerId ? 'Save Changes' : 'Save'}
         </button>
       </div>
     </Modal>

@@ -1,3 +1,5 @@
+import React from 'react';
+
 // Date and time utility functions for conflict detection
 
 export interface DateRange {
@@ -108,4 +110,16 @@ export function validateTimeRange(startTime: string, endTime: string): boolean {
   const start = new Date(`1970-01-01T${startTime}`);
   const end = new Date(`1970-01-01T${endTime}`);
   return start < end;
+}
+
+/**
+ * Highlight all matches of search in text with a <mark> tag
+ */
+export function highlightMatch(text: string | null | undefined, search: string): React.ReactNode {
+  if (!search || !text) return text;
+  const regex = new RegExp(`(${search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+  const parts = text.split(regex);
+  return parts.map((part, i) =>
+    regex.test(part) ? <mark key={i} className="bg-yellow-200 rounded inline leading-none">{part}</mark> : part
+  );
 } 

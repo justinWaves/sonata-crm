@@ -114,9 +114,30 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    await prisma.customer.delete({
-      where: { id },
+    
+    // Delete related records first (cascade delete)
+    await prisma.$transaction(async (tx) => {
+      // Delete appointments for this customer
+      await tx.appointment.deleteMany({
+        where: { customerId: id }
     });
+      
+      // Delete services for this customer
+      await tx.service.deleteMany({
+        where: { customerId: id }
+      });
+      
+      // Delete pianos for this customer (this will also delete related appointments and services)
+      await tx.piano.deleteMany({
+        where: { customerId: id }
+      });
+      
+      // Finally delete the customer
+      await tx.customer.delete({
+        where: { id }
+      });
+    });
+    
     res.json({ success: true });
   } catch (err) {
     console.error('Error deleting customer:', err);
