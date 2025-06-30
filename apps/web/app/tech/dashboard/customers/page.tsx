@@ -400,7 +400,7 @@ export default function CustomersPage() {
               Add Customer
             </button>
         </div>
-      <div className='pt-[44px] w-fit md:pr-8'>
+      <div className='pt-[44px] w-fit md:pr-8 mx-auto'>
         <div className="hidden md:block">
           <CustomerTable
             customers={paginatedCustomers}
@@ -437,8 +437,8 @@ export default function CustomersPage() {
             currentPage={currentPage}
             totalPages={totalPages}
             onPageChange={setCurrentPage}
-          />
-        </div>
+              />
+            </div>
         <div className="flex flex-col gap-2 md:hidden">
           <CustomerCardList
             customers={paginatedCustomers}
@@ -453,8 +453,8 @@ export default function CustomersPage() {
             currentPage={currentPage}
             totalPages={totalPages}
             onPageChange={setCurrentPage}
-          />
-        </div>
+              />
+            </div>
         <BulkBar customers={customers} fetchCustomers={fetchCustomers} setCustomers={setCustomers} />
         <AddCustomerModal
           isOpen={isAddModalOpen}

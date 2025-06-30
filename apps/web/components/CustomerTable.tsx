@@ -116,6 +116,7 @@ export const CustomerTable: React.FC<CustomerTableProps> = (props) => {
   const { query, selectedIds, setSelectedIds, toggleSelect } = useCustomerTable();
   const [sort, setSort] = useState<{ column: string; direction: 'asc' | 'desc' }>({ column: 'firstName', direction: 'asc' });
   const headerCheckboxRef = useRef<HTMLInputElement>(null);
+  const [openMenuKey, setOpenMenuKey] = useState<string | null>(null);
 
   const filter = (c: Customer) => {
     const q = searchTerm.toLowerCase();
@@ -292,275 +293,154 @@ export const CustomerTable: React.FC<CustomerTableProps> = (props) => {
                 </td>
               </tr>
             ) : (
-              filtered.map((customer) => (
-                <tr 
-                  key={customer.id}
-                  className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
-                  onClick={() => openPianoModal(customer)}
-                  tabIndex={0}
-                  role="button"
-                  aria-label={`Open details for ${customer.firstName} ${customer.lastName}`}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      openPianoModal(customer);
-                    }
-                  }}
-                >
-                  <td className="py-4 px-2 text-center">
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.has(customer.id)}
-                      onChange={e => {
-                        e.stopPropagation();
-                        toggleSelect(customer.id);
-                      }}
-                    />
-                  </td>
-                  <td className="py-4 px-6">
-                    <div className="flex items-center">
-                      <div className="w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold">
-                        {customer.firstName[0]}{customer.lastName[0]}
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">
-                          {highlightMatch ? (
-                            <>
-                              {highlightMatch(customer.firstName, searchTerm)}
-                              {highlightMatch(customer.lastName, searchTerm)}
-                            </>
-                          ) : (
-                            <>
-                              {customer.firstName}
-                              {customer.lastName}
-                            </>
-                          )}
+              filtered.map((customer) => {
+                return (
+                  <tr 
+                    key={customer.id}
+                    className="border-b border-gray-100"
+                  >
+                    <td className="py-4 px-2 text-center">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(customer.id)}
+                        onChange={e => {
+                          e.stopPropagation();
+                          toggleSelect(customer.id);
+                        }}
+                      />
+                    </td>
+                    <td className="py-4 px-6">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold">
+                          {customer.firstName[0]}{customer.lastName[0]}
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">
+                            {highlightMatch ? (
+                              <>
+                                {highlightMatch(customer.firstName, searchTerm)}
+                                {highlightMatch(customer.lastName, searchTerm)}
+                              </>
+                            ) : (
+                              <>
+                                {customer.firstName}
+                                {customer.lastName}
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </td>
-                  <td className="py-4 px-6 text-sm text-gray-900 relative w-48 max-w-xs">
-                    <div className="flex items-center gap-2">
-                      <span className="truncate w-32 block">
-                        {highlightMatch ? highlightMatch(customer.phone, searchTerm) : customer.phone}
-                      </span>
-                      {customer.phone && (
-                        <Menu as="div" className="relative w-8 flex-shrink-0 flex justify-center items-center">
-                          <Menu.Button className="p-1 rounded bg-gray-100 hover:bg-gray-200 focus:bg-gray-200 focus:outline-none transition" aria-label="More phone actions">
-                            <IoEllipsisHorizontal className="w-5 h-5 text-gray-500" />
-                          </Menu.Button>
-                          <Menu.Items className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-30 w-40 origin-top bg-white border border-gray-200 divide-y divide-gray-100 rounded-lg shadow-lg focus:outline-none">
-                            <div className="py-1">
-                              <Menu.Item>
-                                {({ active }) => (
-                                  <button
-                                    className={`flex items-center w-full px-4 py-2 text-sm gap-2 ${active ? 'bg-gray-100' : ''}`}
-                                    onClick={() => {
-                                      navigator.clipboard.writeText(customer.phone!);
-                                      toast.success('Phone copied!');
-                                    }}
-                                    aria-label="Copy phone"
-                                  >
-                                    <IoCopyOutline className="w-4 h-4" /> Copy Phone
-                                  </button>
-                                )}
-                              </Menu.Item>
-                              <Menu.Item>
-                                {({ active }) => (
-                                  <a
-                                    href={`tel:${customer.phone}`}
-                                    className={`flex items-center w-full px-4 py-2 text-sm gap-2 ${active ? 'bg-gray-100' : ''}`}
-                                    aria-label="Call phone"
-                                  >
-                                    <IoCallOutline className="w-4 h-4" /> Call
-                                  </a>
-                                )}
-                              </Menu.Item>
-                              <Menu.Item>
-                                {({ active }) => (
-                                  <button
-                                    className={`flex items-center w-full px-4 py-2 text-sm gap-2 ${active ? 'bg-gray-100' : ''}`}
-                                    onClick={e => {
-                                      e.stopPropagation();
-                                      openEditModal(customer);
-                                    }}
-                                    aria-label="Edit customer"
-                                  >
-                                    <IoPencilOutline className="w-4 h-4" /> Edit
-                                  </button>
-                                )}
-                              </Menu.Item>
-                            </div>
-                          </Menu.Items>
-                        </Menu>
-                      )}
-                    </div>
-                  </td>
-                  <td className="py-4 px-6 text-sm text-gray-900 relative w-64 max-w-xs">
-                    <div className="flex items-center gap-2">
-                      <span className="truncate w-40 block">
-                        {highlightMatch ? highlightMatch(customer.email || '-', searchTerm) : customer.email || '-'}
-                      </span>
-                      {customer.email && (
-                        <Menu as="div" className="relative w-8 flex-shrink-0 flex justify-center items-center">
-                          <Menu.Button className="p-1 rounded bg-gray-100 hover:bg-gray-200 focus:bg-gray-200 focus:outline-none transition" aria-label="More email actions">
-                            <IoEllipsisHorizontal className="w-5 h-5 text-gray-500" />
-                          </Menu.Button>
-                          <Menu.Items className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-30 w-40 origin-top bg-white border border-gray-200 divide-y divide-gray-100 rounded-lg shadow-lg focus:outline-none">
-                            <div className="py-1">
-                              <Menu.Item>
-                                {({ active }) => (
-                                  <button
-                                    className={`flex items-center w-full px-4 py-2 text-sm gap-2 ${active ? 'bg-gray-100' : ''}`}
-                                    onClick={() => {
-                                      navigator.clipboard.writeText(customer.email!);
-                                      toast.success('Email copied!');
-                                    }}
-                                    aria-label="Copy email"
-                                  >
-                                    <IoCopyOutline className="w-4 h-4" /> Copy Email
-                                  </button>
-                                )}
-                              </Menu.Item>
-                              <Menu.Item>
-                                {({ active }) => (
-                                  <a
-                                    href={`mailto:${customer.email}`}
-                                    className={`flex items-center w-full px-4 py-2 text-sm gap-2 ${active ? 'bg-gray-100' : ''}`}
-                                    aria-label="Send email"
-                                  >
-                                    <IoMailOutline className="w-4 h-4" /> Send Email
-                                  </a>
-                                )}
-                              </Menu.Item>
-                              <Menu.Item>
-                                {({ active }) => (
-                                  <button
-                                    className={`flex items-center w-full px-4 py-2 text-sm gap-2 ${active ? 'bg-gray-100' : ''}`}
-                                    onClick={e => {
-                                      e.stopPropagation();
-                                      openEditModal(customer);
-                                    }}
-                                    aria-label="Edit customer"
-                                  >
-                                    <IoPencilOutline className="w-4 h-4" /> Edit
-                                  </button>
-                                )}
-                              </Menu.Item>
-                            </div>
-                          </Menu.Items>
-                        </Menu>
-                      )}
-                    </div>
-                  </td>
-                  <td className="py-4 px-6 text-sm text-gray-900 relative w-64 max-w-xs">
-                    <div className="flex items-center gap-2">
-                      <span className="truncate w-40 block">
-                        {(() => {
-                          const address = [customer.address, customer.city, customer.state, customer.zipCode].filter(Boolean).join(', ');
-                          if (!address) return '-';
-                          return highlightMatch ? highlightMatch(address, searchTerm) : address;
-                        })()}
-                      </span>
-                      {(() => {
-                        const address = [customer.address, customer.city, customer.state, customer.zipCode].filter(Boolean).join(', ');
-                        if (!address) return null;
-                        return (
-                          <Menu as="div" className="relative w-8 flex-shrink-0 flex justify-center items-center">
-                            <Menu.Button className="p-1 rounded bg-gray-100 hover:bg-gray-200 focus:bg-gray-200 focus:outline-none transition" aria-label="More address actions">
-                              <IoEllipsisHorizontal className="w-5 h-5 text-gray-500" />
-                            </Menu.Button>
-                            <Menu.Items className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-30 w-48 origin-top bg-white border border-gray-200 divide-y divide-gray-100 rounded-lg shadow-lg focus:outline-none">
-                              <div className="py-1">
-                                <Menu.Item>
-                                  {({ active }) => (
-                                    <button
-                                      type="button"
-                                      className="p-1 border border-gray-300 rounded-md bg-white hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer transition group"
-                                      aria-label="Copy address"
-                                      onClick={e => {
-                                        e.stopPropagation();
-                                        navigator.clipboard.writeText(address);
-                                        toast.success('Address copied!');
-                                      }}
-                                      onKeyDown={e => {
-                                        if (e.key === 'Enter' || e.key === ' ') {
-                                          e.preventDefault();
-                                          e.stopPropagation();
-                                          navigator.clipboard.writeText(address);
-                                          toast.success('Address copied!');
-                                        }
-                                      }}
-                                    >
-                                      <IoCopyOutline className="w-4 h-4" />
-                                    </button>
-                                  )}
-                                </Menu.Item>
-                                <Menu.Item>
-                                  {({ active }) => (
-                                    <a
-                                      href={`https://www.google.com/maps/search/${encodeURIComponent(address)}`}
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      className={`flex items-center w-full px-4 py-2 text-sm gap-2 ${active ? 'bg-gray-100' : ''}`}
-                                      aria-label="View on map"
-                                    >
-                                      <IoLocationOutline className="w-4 h-4" /> View on Map
-                                    </a>
-                                  )}
-                                </Menu.Item>
-                                <Menu.Item>
-                                  {({ active }) => (
-                                    <button
-                                      className={`flex items-center w-full px-4 py-2 text-sm gap-2 ${active ? 'bg-gray-100' : ''}`}
-                                      onClick={e => {
-                                        e.stopPropagation();
-                                        openEditModal(customer);
-                                      }}
-                                      aria-label="Edit customer"
-                                    >
-                                      <IoPencilOutline className="w-4 h-4" /> Edit
-                                    </button>
-                                  )}
-                                </Menu.Item>
-                              </div>
-                            </Menu.Items>
-                          </Menu>
-                        );
-                      })()}
-                    </div>
-                  </td>
-                  <td className="py-4 px-6">
-                    <div className="text-sm text-gray-900">
-                      {(customer.pianos || []).length} Piano{(customer.pianos || []).length !== 1 ? 's' : ''}
-                    </div>
-                  </td>
-                  <td className="py-4 px-6 text-right">
-                    <div className="flex justify-end space-x-3">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openEditModal(customer);
+                    </td>
+                    <td className="group relative py-4 px-6 text-sm text-gray-900 w-48 max-w-xs cursor-pointer"
+                        tabIndex={0}
+                        role="button"
+                        aria-label={`More actions for ${customer.phone}`}
+                        onClick={e => { if (window.innerWidth >= 768) setOpenMenuKey(`${customer.id}-phone`); }}
+                        onKeyDown={e => {
+                          if ((e.key === 'Enter' || e.key === ' ') && window.innerWidth >= 768) {
+                            e.preventDefault();
+                            setOpenMenuKey(`${customer.id}-phone`);
+                          }
                         }}
-                        className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedCustomer(customer);
-                          setShowDeleteConfirm(true);
+                    >
+                      <ValueCellWithMenu
+                        value={customer.phone}
+                        label="Phone"
+                        actions={[{
+                          icon: <IoCopyOutline className='w-4 h-4' />, label: 'Copy Phone', onClick: () => { navigator.clipboard.writeText(customer.phone); toast.success('Phone copied!'); } },
+                          { icon: <IoCallOutline className='w-4 h-4' />, label: 'Call', onClick: () => { window.open(`tel:${customer.phone}`); } },
+                          { icon: <IoPencilOutline className='w-4 h-4' />, label: 'Edit', onClick: () => openEditModal(customer) },
+                        ]}
+                        menuKey={`${customer.id}-phone`}
+                        openMenuKey={openMenuKey}
+                        setOpenMenuKey={setOpenMenuKey}
+                        isCell
+                      />
+                    </td>
+                    <td className="group relative py-4 px-6 text-sm text-gray-900 w-48 max-w-xs cursor-pointer"
+                        tabIndex={0}
+                        role="button"
+                        aria-label={`More actions for ${customer.email}`}
+                        onClick={e => { if (window.innerWidth >= 768) setOpenMenuKey(`${customer.id}-email`); }}
+                        onKeyDown={e => {
+                          if ((e.key === 'Enter' || e.key === ' ') && window.innerWidth >= 768) {
+                            e.preventDefault();
+                            setOpenMenuKey(`${customer.id}-email`);
+                          }
                         }}
-                        className="text-red-600 hover:text-red-800 text-sm font-medium"
-                        aria-label="Delete customer"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
+                    >
+                      <ValueCellWithMenu
+                        value={customer.email}
+                        label="Email"
+                        actions={[{
+                          icon: <IoCopyOutline className='w-4 h-4' />, label: 'Copy Email', onClick: () => { navigator.clipboard.writeText(customer.email || ''); toast.success('Email copied!'); } },
+                          { icon: <IoMailOutline className='w-4 h-4' />, label: 'Send Email', onClick: () => { window.open(`mailto:${customer.email}`); } },
+                          { icon: <IoPencilOutline className='w-4 h-4' />, label: 'Edit', onClick: () => openEditModal(customer) },
+                        ]}
+                        menuKey={`${customer.id}-email`}
+                        openMenuKey={openMenuKey}
+                        setOpenMenuKey={setOpenMenuKey}
+                        isCell
+                      />
+                    </td>
+                    <td className="group relative py-4 px-6 text-sm text-gray-900 w-64 max-w-xs cursor-pointer"
+                        tabIndex={0}
+                        role="button"
+                        aria-label={`More actions for ${customer.address}`}
+                        onClick={e => { if (window.innerWidth >= 768) setOpenMenuKey(`${customer.id}-address`); }}
+                        onKeyDown={e => {
+                          if ((e.key === 'Enter' || e.key === ' ') && window.innerWidth >= 768) {
+                            e.preventDefault();
+                            setOpenMenuKey(`${customer.id}-address`);
+                          }
+                        }}
+                    >
+                      <ValueCellWithMenu
+                        value={[customer.address, customer.city, customer.state, customer.zipCode].filter(Boolean).join(', ') || '-'}
+                        label="Address"
+                        actions={[
+                          { icon: <IoCopyOutline className='w-4 h-4' />, label: 'Copy Address', onClick: () => { const address = [customer.address, customer.city, customer.state, customer.zipCode].filter(Boolean).join(', '); navigator.clipboard.writeText(address); toast.success('Address copied!'); } },
+                          { icon: <IoLocationOutline className='w-4 h-4' />, label: 'View on Map', onClick: () => { const address = [customer.address, customer.city, customer.state, customer.zipCode].filter(Boolean).join(', '); window.open(`https://www.google.com/maps/search/${encodeURIComponent(address)}`); } },
+                          { icon: <IoPencilOutline className='w-4 h-4' />, label: 'Edit', onClick: () => openEditModal(customer) },
+                        ]}
+                        menuKey={`${customer.id}-address`}
+                        openMenuKey={openMenuKey}
+                        setOpenMenuKey={setOpenMenuKey}
+                        isCell
+                      />
+                    </td>
+                    <td className="py-4 px-6">
+                      <div className="text-sm text-gray-900">
+                        {(customer.pianos || []).length} Piano{(customer.pianos || []).length !== 1 ? 's' : ''}
+                      </div>
+                    </td>
+                    <td className="py-4 px-6 text-right">
+                      <div className="flex justify-end space-x-3">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openEditModal(customer);
+                          }}
+                          className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedCustomer(customer);
+                            setShowDeleteConfirm(true);
+                          }}
+                          className="text-red-600 hover:text-red-800 text-sm font-medium"
+                          aria-label="Delete customer"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
@@ -593,57 +473,79 @@ export const CustomerTable: React.FC<CustomerTableProps> = (props) => {
   );
 };
 
-function EmailPopoverCell({ email, highlightMatch, searchTerm }: { email: string | null; highlightMatch?: (text: string | null | undefined, search: string) => React.ReactNode; searchTerm: string; }) {
-  const [popoverOpen, setPopoverOpen] = useState(false);
-  const closeTimeout = useRef<NodeJS.Timeout | null>(null);
-  const handleOpen = () => {
-    if (closeTimeout.current) clearTimeout(closeTimeout.current);
-    setPopoverOpen(true);
-  };
-  const handleClose = () => {
-    closeTimeout.current = setTimeout(() => setPopoverOpen(false), 100);
-  };
+function ValueCellWithMenu({ value, label, actions, menuKey, openMenuKey, setOpenMenuKey, isCell }: {
+  value: string | null | undefined,
+  label: string,
+  actions: { icon: React.ReactNode, label: string, onClick: () => void }[],
+  menuKey: string,
+  openMenuKey: string | null,
+  setOpenMenuKey: (key: string | null) => void,
+  isCell?: boolean
+}) {
+  const [showTooltip, setShowTooltip] = useState(false);
+  const isOpen = openMenuKey === menuKey;
+  useEffect(() => {
+    if (!isOpen) return;
+    function handle(e: MouseEvent) {
+      if (e.target instanceof Node && !e.target.contains(e.target)) {
+        setOpenMenuKey(null);
+      }
+    }
+    function handleEsc(e: KeyboardEvent) {
+      if (e.key === 'Escape') setOpenMenuKey(null);
+    }
+    document.addEventListener('mousedown', handle);
+    document.addEventListener('keydown', handleEsc);
+    return () => {
+      document.removeEventListener('mousedown', handle);
+      document.removeEventListener('keydown', handleEsc);
+    };
+  }, [isOpen, setOpenMenuKey]);
   return (
     <div
-      className="flex items-center gap-2 group"
-      onMouseEnter={handleOpen}
-      onMouseLeave={handleClose}
-      onFocus={handleOpen}
-      onBlur={handleClose}
-      tabIndex={0}
-      style={{ outline: 'none' }}
+      className={isCell ? 'absolute inset-0' : 'relative w-full h-full'}
     >
-      <span
-        className="cursor-pointer group-hover:underline group-focus:underline transition"
-        tabIndex={-1}
-      >
-        {highlightMatch ? highlightMatch(email || '-', searchTerm) : email || '-'}
-      </span>
-      {email && popoverOpen && (
-        <div
-          className="absolute z-20 bottom-full left-1/2 -translate-x-1/2 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg p-2 flex gap-2 animate-fade-in"
-          onMouseEnter={handleOpen}
-          onMouseLeave={handleClose}
-        >
-          <button
-            type="button"
-            className="p-2 rounded hover:bg-gray-100 focus:bg-gray-100"
-            onClick={() => {
-              navigator.clipboard.writeText(email);
-              toast.success('Email copied!');
-            }}
-            aria-label="Copy email"
-          >
-            <IoCopyOutline className="w-5 h-5" />
-          </button>
-          <a
-            href={`mailto:${email}`}
-            className="p-2 rounded hover:bg-gray-100 focus:bg-gray-100"
-            aria-label="Send email"
-          >
-            <IoMailOutline className="w-5 h-5" />
-          </a>
+      {/* Hover/focus background */}
+      <div className={
+        'absolute inset-0 z-0 md:rounded-lg md:transition group-hover:bg-gray-100 group-focus-within:bg-gray-100' +
+        (isOpen ? ' bg-gray-100' : '')
+      }></div>
+      <div className="relative z-10 flex items-center h-full w-full px-4 justify-center">
+        <span className="truncate block max-w-full">{value || '-'}</span>
+      </div>
+      {/* Tooltip and Menu as before */}
+      {showTooltip && !isOpen && (
+        <div className="absolute left-1/2 -translate-x-1/2 -top-8 z-40 bg-gray-900 text-white text-xs px-3 py-1 rounded shadow-lg whitespace-nowrap pointer-events-none">
+          More actions
         </div>
+      )}
+      {isOpen && (
+        <Menu as="div" className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-40 w-44 origin-top bg-white border border-gray-200 rounded-xl shadow-xl focus:outline-none py-2">
+          {actions.map((action, i) => (
+            <Menu.Item key={i}>
+              {({ active }) => (
+                <button
+                  className={`flex items-center gap-2 px-4 py-2 text-sm w-full text-left ${active ? 'bg-gray-100' : ''}`}
+                  onClick={() => { setOpenMenuKey(null); action.onClick(); }}
+                  aria-label={action.label}
+                >
+                  {action.icon} {action.label}
+                </button>
+              )}
+            </Menu.Item>
+          ))}
+          <Menu.Item>
+            {({ active }) => (
+              <button
+                className={`flex items-center gap-2 px-4 py-2 text-sm w-full text-left text-red-600 ${active ? 'bg-gray-100' : ''}`}
+                onMouseDown={e => { e.preventDefault(); setOpenMenuKey(null); if (document.activeElement instanceof HTMLElement) document.activeElement.blur(); }}
+                aria-label="Close menu"
+              >
+                Close
+              </button>
+            )}
+          </Menu.Item>
+        </Menu>
       )}
     </div>
   );
