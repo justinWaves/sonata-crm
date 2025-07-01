@@ -9,6 +9,7 @@ import availabilityRoutes from './routes/availability';
 import scheduleExceptionsRoutes from './routes/scheduleExceptions';
 import serviceTypeCategoryRoutes from './routes/serviceTypeCategory';
 import appointmentRoutes from './routes/appointment';
+import uploadRoutes from './routes/upload';
 import { PrismaClient } from '@prisma/client';
 
 const app = express();
@@ -27,6 +28,7 @@ app.use('/service-type-categories', serviceTypeCategoryRoutes);
 app.use('/appointments', appointmentRoutes);
 app.use('/availability', availabilityRoutes);
 app.use('/schedule-exceptions', scheduleExceptionsRoutes);
+app.use('/upload', uploadRoutes);
 
 // Health check / root
 app.get('/', (req, res) => {

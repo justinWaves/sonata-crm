@@ -3,18 +3,21 @@ import { IoCallOutline, IoCopyOutline, IoMailOutline, IoLocationOutline, IoEllip
 import { Menu } from '@headlessui/react';
 import SkeletonCard from './SkeletonCard';
 import type { Customer } from '../types/customer';
+import CustomerCardModal from './CustomerCardModal';
+import { useCustomerContext } from '../providers/CustomerContext';
 
 interface CustomerCardListProps {
   customers: Customer[];
   openEditModal: (customer: Customer) => void;
   setShowDeleteConfirm: (b: boolean) => void;
-  setSelectedCustomer: (c: Customer) => void;
   searchTerm?: string;
   highlightMatch?: (text: string | null | undefined, search: string) => React.ReactNode;
   isLoading?: boolean;
 }
 
-const CustomerCardList: React.FC<CustomerCardListProps> = ({ customers, openEditModal, setShowDeleteConfirm, setSelectedCustomer, searchTerm = '', highlightMatch, isLoading }) => {
+const CustomerCardList: React.FC<Omit<CustomerCardListProps, 'setSelectedCustomer'>> = ({ customers, openEditModal, setShowDeleteConfirm, searchTerm = '', highlightMatch, isLoading }) => {
+  const { selectedCustomer, openCustomerModal, closeCustomerModal, fetchCustomers, setCustomers } = useCustomerContext();
+
   if (isLoading) {
     return (
       <div className="flex flex-col gap-2">
@@ -32,14 +35,17 @@ const CustomerCardList: React.FC<CustomerCardListProps> = ({ customers, openEdit
         return (
           <div
             key={customer.id}
-            className="bg-white rounded-2xl shadow-lg border border-gray-100 p-5 flex flex-col gap-3 relative"
+            className="bg-white rounded-2xl shadow-lg border border-gray-100 p-5 flex flex-col gap-3 relative md:cursor-default md:pointer-events-none md:opacity-100"
             tabIndex={0}
             role="button"
             aria-label={`Open actions for ${customer.firstName} ${customer.lastName}`}
+            onClick={() => {
+              if (window.innerWidth < 768) openCustomerModal(customer);
+            }}
             onKeyDown={e => {
-              if (e.key === 'Enter' || e.key === ' ') {
+              if ((e.key === 'Enter' || e.key === ' ') && window.innerWidth < 768) {
                 e.preventDefault();
-                openEditModal(customer);
+                openCustomerModal(customer);
               }
             }}
           >
@@ -153,9 +159,9 @@ const CustomerCardList: React.FC<CustomerCardListProps> = ({ customers, openEdit
                     {({ active }) => (
                       <button
                         className={`flex items-center gap-3 px-4 py-2 text-sm w-full text-red-600 ${active ? 'bg-gray-100' : ''}`}
-                        onClick={() => { setSelectedCustomer(customer); setShowDeleteConfirm(true); }}
+                        onClick={() => { setShowDeleteConfirm(true); }}
                         aria-label="Delete"
-                        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedCustomer(customer); setShowDeleteConfirm(true); } }}
+                        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowDeleteConfirm(true); } }}
                       >
                         <IoTrashOutline className="w-5 h-5" /> Delete
                       </button>
@@ -209,6 +215,9 @@ const CustomerCardList: React.FC<CustomerCardListProps> = ({ customers, openEdit
           </div>
         );
       })}
+      {selectedCustomer && (
+        <CustomerCardModal customer={selectedCustomer} onClose={closeCustomerModal} onEdit={openEditModal} />
+      )}
     </div>
   );
 };

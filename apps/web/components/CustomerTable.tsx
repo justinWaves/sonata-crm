@@ -8,12 +8,11 @@ import { IoCopyOutline, IoMailOutline, IoEllipsisHorizontal, IoPencilOutline, Io
 import { Popover, Menu } from '@headlessui/react';
 import CustomerCardModal from './CustomerCardModal';
 import type { Customer } from '../types/customer';
+import { useCustomerContext } from '../providers/CustomerContext';
 
 interface CustomerTableProps {
   customers: Customer[];
   loading: boolean;
-  selectedCustomer: Customer | null;
-  setSelectedCustomer: (c: Customer | null) => void;
   isModalOpen: boolean;
   setIsModalOpen: (b: boolean) => void;
   isAddModalOpen: boolean;
@@ -53,12 +52,10 @@ const ClipboardIcon = () => (
   <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="4" rx="1"/><rect x="5" y="6" width="14" height="16" rx="2"/></svg>
 );
 
-export const CustomerTable: React.FC<CustomerTableProps> = (props) => {
+export const CustomerTable: React.FC<Omit<CustomerTableProps, 'selectedCustomer' | 'setSelectedCustomer'>> = (props) => {
   const {
     customers,
     loading,
-    selectedCustomer,
-    setSelectedCustomer,
     isModalOpen,
     setIsModalOpen,
     isAddModalOpen,
@@ -86,10 +83,10 @@ export const CustomerTable: React.FC<CustomerTableProps> = (props) => {
     highlightMatch,
   } = props;
   const { query, selectedIds, setSelectedIds, toggleSelect } = useCustomerTable();
+  const { selectedCustomer, setSelectedCustomer, fetchCustomers, setCustomers, openCustomerModal, closeCustomerModal } = useCustomerContext();
   const [sort, setSort] = useState<{ column: string; direction: 'asc' | 'desc' }>({ column: 'firstName', direction: 'asc' });
   const headerCheckboxRef = useRef<HTMLInputElement>(null);
   const [openMenuKey, setOpenMenuKey] = useState<string | null>(null);
-  const [selectedCustomerCard, setSelectedCustomerCard] = useState<Customer | null>(null);
 
   const filter = (c: Customer) => {
     const q = searchTerm.toLowerCase();
@@ -287,11 +284,11 @@ export const CustomerTable: React.FC<CustomerTableProps> = (props) => {
                       tabIndex={0}
                       role="button"
                       aria-label={`View details for ${customer.firstName} ${customer.lastName}`}
-                      onClick={() => setSelectedCustomerCard(customer)}
+                      onClick={() => openCustomerModal(customer)}
                       onKeyDown={e => {
                         if (e.key === 'Enter' || e.key === ' ') {
                           e.preventDefault();
-                          setSelectedCustomerCard(customer);
+                          openCustomerModal(customer);
                         }
                       }}
                     >
@@ -456,10 +453,11 @@ export const CustomerTable: React.FC<CustomerTableProps> = (props) => {
           </button>
         </div>
       </Modal>
-      {selectedCustomerCard && (
+      {selectedCustomer && (
         <CustomerCardModal
-          customer={selectedCustomerCard}
-          onClose={() => setSelectedCustomerCard(null)}
+          customer={selectedCustomer}
+          onClose={closeCustomerModal}
+          onEdit={openEditModal}
         />
       )}
     </div>

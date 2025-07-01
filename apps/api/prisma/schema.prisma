@@ -81,6 +81,7 @@ model Piano {
   lastServiceDate DateTime?
   notes           String?
   year            Int?
+  photoUrl        String?
   appointments    Appointment[]
   customer        Customer      @relation(fields: [customerId], references: [id])
   services        Service[]

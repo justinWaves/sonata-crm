@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Modal from './Modal';
+import ImageUpload from './ImageUpload';
 
 interface AddPianoModalProps {
   isOpen: boolean;
@@ -14,6 +15,7 @@ interface AddPianoModalProps {
     serialNumber?: string;
     notes?: string;
     lastServiceDate?: string | undefined;
+    photoUrl?: string;
   }) => void;
   initialValues?: Partial<{
     type: string;
@@ -23,6 +25,7 @@ interface AddPianoModalProps {
     serialNumber: string;
     notes: string;
     lastServiceDate: string;
+    photoUrl: string;
   }>;
 }
 
@@ -40,11 +43,18 @@ export const AddPianoModal: React.FC<AddPianoModalProps> = ({
     serialNumber: initialValues.serialNumber || '',
     notes: initialValues.notes || '',
     lastServiceDate: initialValues.lastServiceDate || '',
+    photoUrl: initialValues.photoUrl || '',
   });
   const [includeLastService, setIncludeLastService] = useState(false);
+  const [showImageUpload, setShowImageUpload] = useState(false);
 
   const handleInputChange = (field: string, value: string) => {
     setForm(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleImageUpload = (photoUrl: string, publicId: string) => {
+    setForm(prev => ({ ...prev, photoUrl }));
+    setShowImageUpload(false);
   };
 
   const handleSave = () => {
@@ -67,8 +77,10 @@ export const AddPianoModal: React.FC<AddPianoModalProps> = ({
       serialNumber: '',
       notes: '',
       lastServiceDate: '',
+      photoUrl: '',
     });
     setIncludeLastService(false);
+    setShowImageUpload(false);
     onClose();
   };
 
@@ -115,6 +127,49 @@ export const AddPianoModal: React.FC<AddPianoModalProps> = ({
           <label className="block text-sm font-medium mb-1 text-gray-700">Notes</label>
           <textarea className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.notes} onChange={e => handleInputChange('notes', e.target.value)} />
         </div>
+
+        {/* Photo Upload Section */}
+        <div className="flex flex-col items-center">
+          <label className="block text-sm font-medium mb-2 text-gray-700 self-start">Piano Photo</label>
+          {form.photoUrl ? (
+            <>
+              <div className="w-32 h-32 rounded-lg overflow-hidden border border-gray-200 mb-2">
+                <img 
+                  src={form.photoUrl} 
+                  alt="Piano" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="flex space-x-2 mb-4">
+                <button
+                  type="button"
+                  onClick={() => setShowImageUpload(true)}
+                  className="text-sm text-blue-600 hover:text-blue-800"
+                >
+                  Change Photo
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleInputChange('photoUrl', '')}
+                  className="text-sm text-red-600 hover:text-red-800"
+                >
+                  Remove
+                </button>
+              </div>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowImageUpload(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition mb-4"
+            >
+              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span>Add Piano Photo</span>
+            </button>
+          )}
+        </div>
         <div>
           <div className="flex items-center mb-2">
             <input
@@ -149,6 +204,17 @@ export const AddPianoModal: React.FC<AddPianoModalProps> = ({
           Save
         </button>
       </div>
+
+      {/* Image Upload Modal */}
+      {showImageUpload && (
+        <Modal isOpen={showImageUpload} onClose={() => setShowImageUpload(false)} title="Upload Piano Photo" widthClass="max-w-2xl">
+          <ImageUpload
+            onImageUpload={handleImageUpload}
+            onCancel={() => setShowImageUpload(false)}
+            currentImageUrl={form.photoUrl}
+          />
+        </Modal>
+      )}
     </Modal>
   );
 }; 

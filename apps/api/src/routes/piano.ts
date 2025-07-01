@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { PrismaClient } from '@prisma/client';
+import cloudinary from '../config/cloudinary';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -92,6 +93,7 @@ router.put('/:id', async (req, res) => {
       serialNumber,
       notes,
       lastServiceDate,
+      photoUrl,
     } = req.body;
 
     const piano = await prisma.piano.update({
@@ -104,6 +106,7 @@ router.put('/:id', async (req, res) => {
         serialNumber,
         notes,
         lastServiceDate: lastServiceDate ? new Date(lastServiceDate) : null,
+        photoUrl,
       },
     });
     res.json(piano);
@@ -117,6 +120,21 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
+    // Find the piano to get the photoUrl
+    const piano = await prisma.piano.findUnique({ where: { id }, select: { photoUrl: true } });
+    // If there is a photoUrl, try to delete from Cloudinary
+    if (piano?.photoUrl) {
+      // Extract publicId from the photoUrl
+      const match = piano.photoUrl.match(/\/piano-photos\/([^./]+)\./);
+      const publicId = match ? `piano-photos/${match[1]}` : undefined;
+      if (publicId) {
+        try {
+          await cloudinary.uploader.destroy(publicId);
+        } catch (cloudinaryError) {
+          console.warn('Failed to delete from Cloudinary:', cloudinaryError);
+        }
+      }
+    }
     await prisma.piano.delete({
       where: { id },
     });

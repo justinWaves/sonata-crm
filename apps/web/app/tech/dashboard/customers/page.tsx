@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { useReferralCode } from '../../../hooks/useReferralCode';
-import { createPortal } from 'react-dom';
 import Modal from '../../../../components/Modal';
 import { AddCustomerModal } from '../../../../components/AddCustomerModal';
 import { CustomerTableProvider } from '../../../../components/CustomerTableContext';
@@ -14,11 +13,10 @@ import Pagination from '../../../../components/Pagination';
 import { highlightMatch } from '../../../../lib/utils';
 import type { Piano } from '../../../../types/piano';
 import type { Customer } from '../../../../types/customer';
+import { useCustomerContext } from '../../../../providers/CustomerContext';
 
 export default function CustomersPage() {
-  const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -82,38 +80,20 @@ export default function CustomersPage() {
   const [searchTerm, setSearchTerm] = useState('');
 
   const generateReferralCode = useReferralCode();
+  const { customers, setCustomers: ctxSetCustomers, selectedCustomer, setSelectedCustomer, openCustomerModal, closeCustomerModal, fetchCustomers: ctxFetchCustomers } = useCustomerContext();
 
   useEffect(() => {
-    fetchCustomers();
-  }, []);
-
-  const fetchCustomers = async () => {
-    try {
-      const response = await fetch('/api/customers');
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Failed to fetch customers');
-      const customersList = data.map((customer: Customer) => ({
-        ...customer,
-        pianos: customer.pianos || []
-      }));
-      setCustomers(customersList);
-      return customersList;
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to fetch customers');
-      return [];
-    } finally {
-      setLoading(false);
-    }
-  };
+    ctxFetchCustomers().finally(() => setLoading(false));
+  }, [ctxFetchCustomers]);
 
   const openPianoModal = (customer: Customer) => {
-    setSelectedCustomer(customer);
+    openCustomerModal(customer);
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
-    setSelectedCustomer(null);
+    closeCustomerModal();
   };
 
   const handleAddCustomer = async () => {
@@ -142,8 +122,8 @@ export default function CustomersPage() {
         textUpdates: false,
         emailUpdates: false,
       });
-      const updatedCustomers = await fetchCustomers();
-      setSelectedCustomer((prev) => {
+      const updatedCustomers = await ctxFetchCustomers();
+      setSelectedCustomer((prev: Customer | null) => {
         if (!prev) return prev;
         const updated = updatedCustomers.find((c: Customer) => c.id === prev.id);
         return updated || prev;
@@ -199,8 +179,8 @@ export default function CustomersPage() {
       const updated = await response.json();
       setOriginalEditData(updated);
       setEditForm(updated);
-      const updatedCustomers = await fetchCustomers();
-      setSelectedCustomer((prev) => {
+      const updatedCustomers = await ctxFetchCustomers();
+      setSelectedCustomer((prev: Customer | null) => {
         if (!prev) return prev;
         const updated = updatedCustomers.find((c: Customer) => c.id === prev.id);
         return updated || prev;
@@ -226,8 +206,8 @@ export default function CustomersPage() {
       setShowDeleteConfirm(false);
       setIsEditModalOpen(false);
       setSelectedCustomer(null);
-      const updatedCustomers = await fetchCustomers();
-      setCustomers(updatedCustomers);
+      const updatedCustomers = await ctxFetchCustomers();
+      ctxSetCustomers(updatedCustomers);
       toast.success('Customer deleted!');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to delete customer');
@@ -253,8 +233,8 @@ export default function CustomersPage() {
       }
       setIsAddPianoModalOpen(false);
       setAddPianoForm({ type: '', brand: '', model: '', year: '', serialNumber: '', notes: '', lastServiceDate: '' });
-      const updatedCustomers = await fetchCustomers();
-      setSelectedCustomer((prev) => {
+      const updatedCustomers = await ctxFetchCustomers();
+      setSelectedCustomer((prev: Customer | null) => {
         if (!prev) return prev;
         const updated = updatedCustomers.find((c: Customer) => c.id === prev.id);
         return updated || prev;
@@ -302,8 +282,8 @@ export default function CustomersPage() {
         throw new Error(data.error || 'Failed to update piano');
       }
       setIsEditPianoModalOpen(false);
-      const updatedCustomers = await fetchCustomers();
-      setSelectedCustomer((prev) => {
+      const updatedCustomers = await ctxFetchCustomers();
+      setSelectedCustomer((prev: Customer | null) => {
         if (!prev) return prev;
         const updated = updatedCustomers.find((c: Customer) => c.id === prev.id);
         return updated || prev;
@@ -327,8 +307,8 @@ export default function CustomersPage() {
       }
       setShowDeletePianoConfirm(false);
       setIsEditPianoModalOpen(false);
-      const updatedCustomers = await fetchCustomers();
-      setSelectedCustomer((prev) => {
+      const updatedCustomers = await ctxFetchCustomers();
+      setSelectedCustomer((prev: Customer | null) => {
         if (!prev) return prev;
         const updated = updatedCustomers.find((c: Customer) => c.id === prev.id);
         return updated || prev;
@@ -378,8 +358,6 @@ export default function CustomersPage() {
           <CustomerTable
             customers={paginatedCustomers}
             loading={loading}
-            selectedCustomer={selectedCustomer}
-            setSelectedCustomer={setSelectedCustomer}
             isModalOpen={isModalOpen}
             setIsModalOpen={setIsModalOpen}
             isAddModalOpen={isAddModalOpen}
@@ -417,7 +395,6 @@ export default function CustomersPage() {
             customers={paginatedCustomers}
             openEditModal={openEditModal}
             setShowDeleteConfirm={setShowDeleteConfirm}
-            setSelectedCustomer={setSelectedCustomer}
             searchTerm={searchTerm}
             highlightMatch={highlightMatch}
             isLoading={loading}
@@ -428,7 +405,7 @@ export default function CustomersPage() {
             onPageChange={setCurrentPage}
               />
             </div>
-        <BulkBar customers={customers} fetchCustomers={fetchCustomers} setCustomers={setCustomers} />
+        <BulkBar customers={customers} fetchCustomers={ctxFetchCustomers} setCustomers={ctxSetCustomers} />
         <AddCustomerModal
           isOpen={isAddModalOpen}
           onClose={() => setIsAddModalOpen(false)}
@@ -451,7 +428,7 @@ export default function CustomersPage() {
               updatedAt: newCustomer.updatedAt || new Date().toISOString(),
               pianos: Array.isArray(newCustomer.pianos) ? newCustomer.pianos : [],
             };
-            setCustomers(prev => [safeCustomer, ...prev]);
+            ctxSetCustomers(prev => [safeCustomer, ...prev]);
             setIsAddModalOpen(false);
             toast.success('Customer added!');
           }}
@@ -461,12 +438,13 @@ export default function CustomersPage() {
             isOpen={isEditModalOpen}
             onClose={() => setIsEditModalOpen(false)}
             onSave={async (updatedCustomer) => {
+              setIsEditModalOpen(false);
               const response = await fetch(`/api/customers?id=${updatedCustomer.id}`);
               const freshCustomer = response.ok ? await response.json() : updatedCustomer;
-              setIsEditModalOpen(false);
-              const updatedCustomers = await fetchCustomers();
-              setCustomers(updatedCustomers);
-              setSelectedCustomer((prev) => prev && prev.id === freshCustomer.id ? { ...prev, ...freshCustomer } : prev);
+              ctxSetCustomers(prevCustomers => 
+                prevCustomers.map(c => c.id === freshCustomer.id ? freshCustomer : c)
+              );
+              openCustomerModal(freshCustomer);
               toast.success('Customer updated!');
             }}
             initialValues={editForm}

@@ -102,6 +102,7 @@ router.put('/:id', async (req, res) => {
         textUpdates,
         emailUpdates,
       },
+      include: { pianos: true }
     });
     res.json(customer);
   } catch (err) {

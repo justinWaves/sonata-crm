@@ -7,4 +7,5 @@ export interface Piano {
   serialNumber?: string | null;
   lastServiceDate?: string | null;
   notes?: string | null;
+  photoUrl?: string | null;
 } 

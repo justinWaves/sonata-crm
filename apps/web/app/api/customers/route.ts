@@ -4,16 +4,27 @@ import { authOptions } from '../auth/[...nextauth]/route';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
-export async function GET() {
+export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
-    const res = await fetch(`${API_URL}/customers?technicianId=${session.user.id}`);
-    const data = await res.json();
-    return NextResponse.json(data, { status: res.status });
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    
+    if (id) {
+      // Return a single customer
+      const res = await fetch(`${API_URL}/customers/${id}`);
+      const data = await res.json();
+      return NextResponse.json(data, { status: res.status });
+    } else {
+      // Return all customers
+      const res = await fetch(`${API_URL}/customers?technicianId=${session.user.id}`);
+      const data = await res.json();
+      return NextResponse.json(data, { status: res.status });
+    }
   } catch (error) {
     console.error('Error fetching customers:', error);
     return NextResponse.json(

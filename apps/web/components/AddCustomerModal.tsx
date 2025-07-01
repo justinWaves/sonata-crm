@@ -148,7 +148,7 @@ export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ...p, customerId: editingCustomerId }),
         })),
-        ...updatedPianos.map((p) => fetch('/api/pianos', {
+        ...updatedPianos.map((p) => fetch(`/api/pianos?id=${p.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(p),
@@ -219,8 +219,7 @@ export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
   };
 
   const handleAddPiano = (piano: Partial<Piano>) => {
-    const id = piano.id || (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Date.now().toString());
-    setPianos((prev: Piano[]) => [...prev, { ...piano, id } as Piano]);
+    setPianos((prev: Piano[]) => [...prev, { ...piano } as Piano]);
     setIsAddPianoModalOpen(false);
   };
 
@@ -325,9 +324,15 @@ export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
               {pianos.map((piano, idx) => (
                 <li key={idx} className="py-2 flex items-center justify-between group">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center text-gray-400 group-hover:bg-gray-300">
-                      <span className="text-2xl">🎹</span>
-                    </div>
+                    {piano.photoUrl ? (
+                      <div className="w-16 h-16 rounded-lg overflow-hidden border border-gray-200 flex items-center justify-center">
+                        <img src={piano.photoUrl} alt="Piano" className="w-full h-full object-cover" />
+                      </div>
+                    ) : (
+                      <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center text-gray-400 group-hover:bg-gray-300">
+                        <span className="text-2xl">🎹</span>
+                      </div>
+                    )}
                     <div>
                       <div className="font-medium text-gray-900">{piano.type} {piano.brand && `- ${piano.brand}`}{piano.model && ` ${piano.model}`}{piano.year && ` (${piano.year})`}</div>
                       <div className="text-xs text-gray-500">Serial: {piano.serialNumber || 'N/A'}</div>
