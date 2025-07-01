@@ -303,7 +303,11 @@ export const CustomerTable: React.FC<CustomerTableProps> = (props) => {
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">
-                            {customer.firstName} {customer.lastName}
+                            {highlightMatch ? (
+                              <>{highlightMatch(customer.firstName + ' ' + customer.lastName, searchTerm)}</>
+                            ) : (
+                              <>{customer.firstName} {customer.lastName}</>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -332,6 +336,8 @@ export const CustomerTable: React.FC<CustomerTableProps> = (props) => {
                         openMenuKey={openMenuKey}
                         setOpenMenuKey={setOpenMenuKey}
                         isCell
+                        searchTerm={searchTerm}
+                        highlightMatch={highlightMatch}
                       />
                     </td>
                     <td className="group relative py-4 px-6 text-sm text-gray-900 w-48 max-w-xs cursor-pointer"
@@ -358,6 +364,8 @@ export const CustomerTable: React.FC<CustomerTableProps> = (props) => {
                         openMenuKey={openMenuKey}
                         setOpenMenuKey={setOpenMenuKey}
                         isCell
+                        searchTerm={searchTerm}
+                        highlightMatch={highlightMatch}
                       />
                     </td>
                     <td className="group relative py-4 px-6 text-sm text-gray-900 w-64 max-w-xs cursor-pointer"
@@ -384,6 +392,8 @@ export const CustomerTable: React.FC<CustomerTableProps> = (props) => {
                         openMenuKey={openMenuKey}
                         setOpenMenuKey={setOpenMenuKey}
                         isCell
+                        searchTerm={searchTerm}
+                        highlightMatch={highlightMatch}
                       />
                     </td>
                     <td className="py-4 px-6">
@@ -456,14 +466,16 @@ export const CustomerTable: React.FC<CustomerTableProps> = (props) => {
   );
 };
 
-function ValueCellWithMenu({ value, label, actions, menuKey, openMenuKey, setOpenMenuKey, isCell }: {
+function ValueCellWithMenu({ value, label, actions, menuKey, openMenuKey, setOpenMenuKey, isCell, searchTerm, highlightMatch }: {
   value: string | null | undefined,
   label: string,
   actions: { icon: React.ReactNode, label: string, onClick: () => void }[],
   menuKey: string,
   openMenuKey: string | null,
   setOpenMenuKey: (key: string | null) => void,
-  isCell?: boolean
+  isCell?: boolean,
+  searchTerm?: string,
+  highlightMatch?: (text: string | null | undefined, search: string) => React.ReactNode
 }) {
   const [showTooltip, setShowTooltip] = useState(false);
   const isOpen = openMenuKey === menuKey;
@@ -494,7 +506,13 @@ function ValueCellWithMenu({ value, label, actions, menuKey, openMenuKey, setOpe
         (isOpen ? ' bg-gray-100' : '')
       }></div>
       <div className="relative z-10 flex items-center h-full w-full px-4 justify-center">
-        <span className="truncate block max-w-full">{value || '-'}</span>
+        <span className="truncate block max-w-full">
+          {highlightMatch && searchTerm ? (
+            <>{highlightMatch(value, searchTerm)}</>
+          ) : (
+            <>{value || '-'}</>
+          )}
+        </span>
       </div>
       {/* Tooltip and Menu as before */}
       {showTooltip && !isOpen && (
