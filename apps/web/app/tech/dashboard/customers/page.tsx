@@ -12,36 +12,8 @@ import BulkBar from '../../../../components/BulkBar';
 import CustomerCardList from '../../../../components/CustomerCardList';
 import Pagination from '../../../../components/Pagination';
 import { highlightMatch } from '../../../../lib/utils';
-
-interface Piano {
-  id: string;
-  type: string;
-  brand: string | null;
-  year: number | null;
-  model: string | null;
-  serialNumber: string | null;
-  lastServiceDate: string | null;
-  notes: string | null;
-}
-
-interface Customer {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string | null;
-  phone: string;
-  address: string;
-  city?: string | null;
-  state?: string | null;
-  zipCode?: string | null;
-  companyName?: string | null;
-  referralCode?: string | null;
-  textUpdates?: boolean;
-  emailUpdates?: boolean;
-  createdAt: string;
-  updatedAt: string;
-  pianos?: Piano[];
-}
+import type { Piano } from '../../../../types/piano';
+import type { Customer } from '../../../../types/customer';
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -197,6 +169,7 @@ export default function CustomersPage() {
       textUpdates: !!customer.textUpdates,
       emailUpdates: !!customer.emailUpdates,
       referralCode: customer.referralCode || '',
+      pianos: customer.pianos || [],
     };
     setEditForm(data);
     setOriginalEditData(data);
@@ -487,10 +460,13 @@ export default function CustomersPage() {
           <AddCustomerModal
             isOpen={isEditModalOpen}
             onClose={() => setIsEditModalOpen(false)}
-            onSave={(updatedCustomer) => {
+            onSave={async (updatedCustomer) => {
+              const response = await fetch(`/api/customers?id=${updatedCustomer.id}`);
+              const freshCustomer = response.ok ? await response.json() : updatedCustomer;
               setIsEditModalOpen(false);
-              setCustomers((prev) => prev.map((c) => c.id === updatedCustomer.id ? { ...c, ...updatedCustomer } : c));
-              setSelectedCustomer((prev) => prev && prev.id === updatedCustomer.id ? { ...prev, ...updatedCustomer } : prev);
+              const updatedCustomers = await fetchCustomers();
+              setCustomers(updatedCustomers);
+              setSelectedCustomer((prev) => prev && prev.id === freshCustomer.id ? { ...prev, ...freshCustomer } : prev);
               toast.success('Customer updated!');
             }}
             initialValues={editForm}

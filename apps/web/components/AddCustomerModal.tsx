@@ -3,27 +3,15 @@
 import React, { useState } from 'react';
 import Modal from './Modal';
 import { AddPianoModal } from './AddPianoModal';
-
-interface Customer {
-  id: string;
-  firstName: string;
-  lastName: string;
-  companyName?: string;
-  email?: string;
-  phone: string;
-  address: string;
-  city?: string;
-  state?: string;
-  zipCode?: string;
-  textUpdates?: boolean;
-  emailUpdates?: boolean;
-}
+import { EditPianoModal } from './EditPianoModal';
+import type { Piano } from '../types/piano';
+import type { Customer } from '../types/customer';
 
 interface AddCustomerModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (customer: Customer) => void;
-  initialValues?: Partial<Omit<Customer, 'id'>>;
+  initialValues?: Partial<Omit<Customer, 'id'>> & { pianos?: Piano[] };
   editingCustomerId?: string;
 }
 
@@ -48,11 +36,14 @@ export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
     emailUpdates: initialValues.emailUpdates || false,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [pianos, setPianos] = useState<any[]>([]);
+  const [pianos, setPianos] = useState<Piano[]>([]);
   const [isAddPianoModalOpen, setIsAddPianoModalOpen] = useState(false);
+  const [isEditPianoModalOpen, setIsEditPianoModalOpen] = useState(false);
+  const [editPianoIndex, setEditPianoIndex] = useState<number | null>(null);
 
   // Store initial form for dirty check
   const initialForm = React.useRef(form);
+  const initialPianos = React.useRef<Piano[]>([]);
   React.useEffect(() => {
     if (isOpen) {
       setForm({
@@ -81,15 +72,37 @@ export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
         textUpdates: initialValues.textUpdates || false,
         emailUpdates: initialValues.emailUpdates || false,
       };
+      const pianosVal = 'pianos' in initialValues && Array.isArray((initialValues as any).pianos) ? (initialValues as any).pianos : [];
+      setPianos(pianosVal);
+      initialPianos.current = pianosVal;
     }
     // eslint-disable-next-line
   }, [isOpen, editingCustomerId]);
 
-  const isDirty = Object.keys(form).some(
-    (key) => (form as any)[key] !== (initialForm.current as any)[key]
-  );
+  const isDirty =
+    Object.keys(form).some(
+      (key) => (form as any)[key] !== (initialForm.current as any)[key]
+    ) ||
+    pianos.length !== initialPianos.current.length ||
+    pianos.some((p, i) => JSON.stringify(p) !== JSON.stringify(initialPianos.current[i]));
+
+  function formatPhoneNumber(value: string) {
+    // Remove all non-digit characters
+    const digits = value.replace(/\D/g, '');
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
+  }
+
+  function isValidPhoneNumber(value: string) {
+    // Must be exactly 10 digits
+    return /^\(\d{3}\) \d{3}-\d{4}$/.test(value);
+  }
 
   const handleInputChange = (field: string, value: string | boolean) => {
+    if (field === 'phone' && typeof value === 'string') {
+      value = formatPhoneNumber(value);
+    }
     setForm(prev => ({ ...prev, [field]: value }));
     if (errors[field]) setErrors(prev => ({ ...prev, [field]: '' }));
   };
@@ -99,6 +112,7 @@ export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
     if (!form.firstName.trim()) newErrors.firstName = 'First name is required';
     if (!form.lastName.trim()) newErrors.lastName = 'Last name is required';
     if (!form.phone.trim()) newErrors.phone = 'Phone number is required';
+    else if (!isValidPhoneNumber(form.phone)) newErrors.phone = 'Phone number must be in format (XXX) XXX-XXXX';
     if (!form.address.trim()) newErrors.address = 'Address is required';
     if (form.email && !/^[^\s@]+@[^-\s@]+\.[^\s@]+$/.test(form.email)) newErrors.email = 'Please enter a valid email address';
     setErrors(newErrors);
@@ -113,7 +127,35 @@ export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
       return;
     }
     if (editingCustomerId) {
-      // Edit mode: PUT request
+      // 1. Find removed pianos (in initialPianos but not in pianos)
+      const removedPianos = initialPianos.current.filter(
+        (initPiano) => !pianos.some((p) => p.id === initPiano.id)
+      );
+      // 2. Find new pianos (in pianos but not in initialPianos, i.e., no id)
+      const newPianos = pianos.filter((p) => !p.id);
+      // 3. Find updated pianos (same id, but fields changed)
+      const updatedPianos = pianos.filter((p) => {
+        if (!p.id) return false;
+        const orig = initialPianos.current.find((ip) => ip.id === p.id);
+        return orig && JSON.stringify(p) !== JSON.stringify(orig);
+      });
+
+      // 4. Await all requests
+      await Promise.all([
+        ...removedPianos.map((p) => fetch(`/api/pianos?id=${p.id}`, { method: 'DELETE' })),
+        ...newPianos.map((p) => fetch('/api/pianos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...p, customerId: editingCustomerId }),
+        })),
+        ...updatedPianos.map((p) => fetch('/api/pianos', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(p),
+        })),
+      ]);
+
+      // Then update the customer as before
       const response = await fetch('/api/customers', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -176,13 +218,30 @@ export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
     onClose();
   };
 
-  const handleAddPiano = (piano: any) => {
-    setPianos(prev => [...prev, piano]);
+  const handleAddPiano = (piano: Partial<Piano>) => {
+    const id = piano.id || (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Date.now().toString());
+    setPianos((prev: Piano[]) => [...prev, { ...piano, id } as Piano]);
     setIsAddPianoModalOpen(false);
   };
 
   const handleRemovePiano = (idx: number) => {
     setPianos(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleEditPiano = (idx: number) => {
+    setEditPianoIndex(idx);
+    setIsEditPianoModalOpen(true);
+  };
+
+  const handleSaveEditPiano = (updatedPiano: Piano) => {
+    setPianos((prev: Piano[]) => prev.map((p, i) => i === editPianoIndex ? updatedPiano : p));
+    setIsEditPianoModalOpen(false);
+    setEditPianoIndex(null);
+  };
+
+  const handleCloseEditPiano = () => {
+    setIsEditPianoModalOpen(false);
+    setEditPianoIndex(null);
   };
 
   return (
@@ -212,7 +271,7 @@ export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
           </div>
           <div className="w-full md:w-1/2">
             <label className="block text-sm font-medium mb-1 text-gray-700">Phone</label>
-            <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.phone} onChange={e => handleInputChange('phone', e.target.value)} />
+            <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.phone} maxLength={14} onChange={e => handleInputChange('phone', e.target.value)} />
             {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
           </div>
         </div>
@@ -264,20 +323,34 @@ export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
           ) : (
             <ul className="divide-y divide-gray-200">
               {pianos.map((piano, idx) => (
-                <li key={idx} className="py-2 flex items-center justify-between">
-                  <div>
-                    <div className="font-medium text-gray-900">{piano.type} {piano.brand && `- ${piano.brand}`}{piano.model && ` ${piano.model}`}{piano.year && ` (${piano.year})`}</div>
-                    <div className="text-xs text-gray-500">Serial: {piano.serialNumber || 'N/A'}</div>
-                    <div className="text-xs text-gray-500">Last Service: {piano.lastServiceDate ? new Date(piano.lastServiceDate).toLocaleDateString() : 'Never'}</div>
-                    {piano.notes && <div className="text-xs text-gray-400 mt-1">{piano.notes}</div>}
+                <li key={idx} className="py-2 flex items-center justify-between group">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center text-gray-400 group-hover:bg-gray-300">
+                      <span className="text-2xl">🎹</span>
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-900">{piano.type} {piano.brand && `- ${piano.brand}`}{piano.model && ` ${piano.model}`}{piano.year && ` (${piano.year})`}</div>
+                      <div className="text-xs text-gray-500">Serial: {piano.serialNumber || 'N/A'}</div>
+                      <div className="text-xs text-gray-500">Last Service: {piano.lastServiceDate ? new Date(piano.lastServiceDate).toLocaleDateString() : 'Never'}</div>
+                      {piano.notes && <div className="text-xs text-gray-400 mt-1">{piano.notes}</div>}
+                    </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => handleRemovePiano(idx)}
-                    className="text-red-500 hover:underline text-xs ml-2"
-                  >
-                    Remove
-                  </button>
+                  <div className="flex flex-col md:flex-row gap-1 md:gap-2 items-end md:items-center ml-2">
+                    <button
+                      type="button"
+                      onClick={() => handleEditPiano(idx)}
+                      className="text-blue-600 hover:underline text-xs md:text-sm"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={e => { e.stopPropagation(); handleRemovePiano(idx); }}
+                      className="text-red-500 hover:underline text-xs md:text-sm"
+                    >
+                      Remove
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -289,6 +362,14 @@ export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
         onClose={() => setIsAddPianoModalOpen(false)}
         onSave={handleAddPiano}
       />
+      {isEditPianoModalOpen && editPianoIndex !== null && pianos[editPianoIndex] && (
+        <EditPianoModal
+          isOpen={isEditPianoModalOpen}
+          onClose={handleCloseEditPiano}
+          onSave={handleSaveEditPiano}
+          initialValues={pianos[editPianoIndex]!}
+        />
+      )}
       <div className="flex justify-end space-x-2 pt-2">
         {errors.form && <div className="text-red-600 text-sm flex-1 flex items-center">{errors.form}</div>}
         <button

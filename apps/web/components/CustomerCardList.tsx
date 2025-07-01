@@ -2,25 +2,7 @@ import React, { useState } from 'react';
 import { IoCallOutline, IoCopyOutline, IoMailOutline, IoLocationOutline, IoEllipsisHorizontal, IoPencilOutline, IoTrashOutline } from 'react-icons/io5';
 import { Menu } from '@headlessui/react';
 import SkeletonCard from './SkeletonCard';
-
-interface Customer {
-  id: string;
-  firstName: string;
-  lastName: string;
-  phone: string;
-  email: string | null;
-  address: string;
-  city?: string | null;
-  state?: string | null;
-  zipCode?: string | null;
-  companyName?: string | null;
-  referralCode?: string | null;
-  textUpdates?: boolean;
-  emailUpdates?: boolean;
-  createdAt: string;
-  updatedAt: string;
-  pianos?: any[];
-}
+import type { Customer } from '../types/customer';
 
 interface CustomerCardListProps {
   customers: Customer[];

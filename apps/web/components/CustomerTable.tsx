@@ -6,36 +6,8 @@ import { toast } from 'react-hot-toast';
 import { FiCopy } from 'react-icons/fi';
 import { IoCopyOutline, IoMailOutline, IoEllipsisHorizontal, IoPencilOutline, IoCallOutline, IoLocationOutline } from 'react-icons/io5';
 import { Popover, Menu } from '@headlessui/react';
-
-interface Piano {
-  id: string;
-  type: string;
-  brand: string | null;
-  year: number | null;
-  model: string | null;
-  serialNumber: string | null;
-  lastServiceDate: string | null;
-  notes: string | null;
-}
-
-interface Customer {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string | null;
-  phone: string;
-  address: string;
-  city?: string | null;
-  state?: string | null;
-  zipCode?: string | null;
-  companyName?: string | null;
-  referralCode?: string | null;
-  textUpdates?: boolean;
-  emailUpdates?: boolean;
-  createdAt: string;
-  updatedAt: string;
-  pianos?: Piano[];
-}
+import CustomerCardModal from './CustomerCardModal';
+import type { Customer } from '../types/customer';
 
 interface CustomerTableProps {
   customers: Customer[];
@@ -117,6 +89,7 @@ export const CustomerTable: React.FC<CustomerTableProps> = (props) => {
   const [sort, setSort] = useState<{ column: string; direction: 'asc' | 'desc' }>({ column: 'firstName', direction: 'asc' });
   const headerCheckboxRef = useRef<HTMLInputElement>(null);
   const [openMenuKey, setOpenMenuKey] = useState<string | null>(null);
+  const [selectedCustomerCard, setSelectedCustomerCard] = useState<Customer | null>(null);
 
   const filter = (c: Customer) => {
     const q = searchTerm.toLowerCase();
@@ -309,24 +282,28 @@ export const CustomerTable: React.FC<CustomerTableProps> = (props) => {
                         }}
                       />
                     </td>
-                    <td className="py-4 px-6">
-                      <div className="flex items-center">
+                    <td
+                      className="group relative py-4 px-6 text-sm text-gray-900 cursor-pointer"
+                      tabIndex={0}
+                      role="button"
+                      aria-label={`View details for ${customer.firstName} ${customer.lastName}`}
+                      onClick={() => setSelectedCustomerCard(customer)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setSelectedCustomerCard(customer);
+                        }
+                      }}
+                    >
+                      {/* Hover/focus background */}
+                      <div className="absolute inset-0 z-0 md:rounded-lg md:transition group-hover:bg-gray-100 group-focus-within:bg-gray-100"></div>
+                      <div className="flex items-center relative z-10 w-full h-full">
                         <div className="w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold">
                           {customer.firstName[0]}{customer.lastName[0]}
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">
-                            {highlightMatch ? (
-                              <>
-                                {highlightMatch(customer.firstName, searchTerm)}
-                                {highlightMatch(customer.lastName, searchTerm)}
-                              </>
-                            ) : (
-                              <>
-                                {customer.firstName}
-                                {customer.lastName}
-                              </>
-                            )}
+                            {customer.firstName} {customer.lastName}
                           </div>
                         </div>
                       </div>
@@ -469,6 +446,12 @@ export const CustomerTable: React.FC<CustomerTableProps> = (props) => {
           </button>
         </div>
       </Modal>
+      {selectedCustomerCard && (
+        <CustomerCardModal
+          customer={selectedCustomerCard}
+          onClose={() => setSelectedCustomerCard(null)}
+        />
+      )}
     </div>
   );
 };
