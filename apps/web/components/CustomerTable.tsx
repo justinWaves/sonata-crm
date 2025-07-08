@@ -476,9 +476,38 @@ function ValueCellWithMenu({ value, label, actions, menuKey, openMenuKey, setOpe
   highlightMatch?: (text: string | null | undefined, search: string) => React.ReactNode
 }) {
   const [showTooltip, setShowTooltip] = useState(false);
+  const [menuPosition, setMenuPosition] = useState<'top' | 'bottom'>('bottom');
   const isOpen = openMenuKey === menuKey;
+  const autoCloseTimerRef = useRef<NodeJS.Timeout | null>(null);
   useEffect(() => {
     if (!isOpen) return;
+    
+    // Calculate menu position when opening
+    const calculatePosition = () => {
+      const element = document.querySelector(`[data-menu-key="${menuKey}"]`);
+      if (element) {
+        const rect = element.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const menuHeight = 200; // Approximate menu height
+        const spaceBelow = viewportHeight - rect.bottom;
+        const spaceAbove = rect.top;
+        
+        // If there's not enough space below but enough space above, open upward
+        if (spaceBelow < menuHeight && spaceAbove > menuHeight) {
+          setMenuPosition('top');
+        } else {
+          setMenuPosition('bottom');
+        }
+      }
+    };
+    
+    calculatePosition();
+    
+    // Start auto-close timer (3 seconds)
+    autoCloseTimerRef.current = setTimeout(() => {
+      setOpenMenuKey(null);
+    }, 3000);
+    
     function handle(e: MouseEvent) {
       if (e.target instanceof Node && !e.target.contains(e.target)) {
         setOpenMenuKey(null);
@@ -492,11 +521,15 @@ function ValueCellWithMenu({ value, label, actions, menuKey, openMenuKey, setOpe
     return () => {
       document.removeEventListener('mousedown', handle);
       document.removeEventListener('keydown', handleEsc);
+      if (autoCloseTimerRef.current) {
+        clearTimeout(autoCloseTimerRef.current);
+      }
     };
-  }, [isOpen, setOpenMenuKey]);
+  }, [isOpen, setOpenMenuKey, menuKey]);
   return (
     <div
       className={isCell ? 'absolute inset-0' : 'relative w-full h-full'}
+      data-menu-key={menuKey}
     >
       {/* Hover/focus background */}
       <div className={
@@ -514,36 +547,53 @@ function ValueCellWithMenu({ value, label, actions, menuKey, openMenuKey, setOpe
       </div>
       {/* Tooltip and Menu as before */}
       {showTooltip && !isOpen && (
-        <div className="absolute left-1/2 -translate-x-1/2 -top-8 z-40 bg-gray-900 text-white text-xs px-3 py-1 rounded shadow-lg whitespace-nowrap pointer-events-none">
+        <div className={`absolute left-1/2 -translate-x-1/2 z-50 bg-gray-900 text-white text-xs px-3 py-1 rounded shadow-lg whitespace-nowrap pointer-events-none ${
+          menuPosition === 'top' ? '-bottom-8' : '-top-8'
+        }`}>
           More actions
         </div>
       )}
       {isOpen && (
-        <Menu as="div" className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-40 w-44 origin-top bg-white border border-gray-200 rounded-xl shadow-xl focus:outline-none py-2">
+        <Menu as="div" className={`absolute left-1/2 -translate-x-1/2 z-50 w-44 bg-white border border-gray-200 rounded-xl shadow-xl focus:outline-none py-2 ${
+          menuPosition === 'top' 
+            ? 'bottom-full mb-2 origin-bottom' 
+            : 'top-full mt-2 origin-top'
+        }`}>
           {actions.map((action, i) => (
             <Menu.Item key={i}>
               {({ active }) => (
                 <button
-                  className={`flex items-center gap-2 px-4 py-2 text-sm w-full text-left ${active ? 'bg-gray-100' : ''}`}
-                  onClick={() => { setOpenMenuKey(null); action.onClick(); }}
+                  className={`flex items-center gap-2 px-4 py-2 text-sm w-full text-left transition-all duration-200 ease-in-out transform hover:scale-[1.02] cursor-pointer ${
+                    active 
+                      ? 'bg-blue-50 text-blue-700 shadow-sm' 
+                      : 'hover:bg-gray-50 hover:text-gray-700 hover:shadow-sm'
+                  }`}
+                  onClick={() => { 
+                    if (autoCloseTimerRef.current) {
+                      clearTimeout(autoCloseTimerRef.current);
+                    }
+                    setOpenMenuKey(null); 
+                    action.onClick(); 
+                  }}
+                  onMouseEnter={() => {
+                    // Reset timer when hovering over menu items
+                    if (autoCloseTimerRef.current) {
+                      clearTimeout(autoCloseTimerRef.current);
+                    }
+                    autoCloseTimerRef.current = setTimeout(() => {
+                      setOpenMenuKey(null);
+                    }, 3000);
+                  }}
                   aria-label={action.label}
                 >
-                  {action.icon} {action.label}
+                  <span className={`transition-transform duration-200 ${active ? 'scale-110' : 'group-hover:scale-110'}`}>
+                    {action.icon}
+                  </span>
+                  <span className="font-medium">{action.label}</span>
                 </button>
               )}
             </Menu.Item>
           ))}
-          <Menu.Item>
-            {({ active }) => (
-              <button
-                className={`flex items-center gap-2 px-4 py-2 text-sm w-full text-left text-red-600 ${active ? 'bg-gray-100' : ''}`}
-                onMouseDown={e => { e.preventDefault(); setOpenMenuKey(null); if (document.activeElement instanceof HTMLElement) document.activeElement.blur(); }}
-                aria-label="Close menu"
-              >
-                Close
-              </button>
-            )}
-          </Menu.Item>
         </Menu>
       )}
     </div>

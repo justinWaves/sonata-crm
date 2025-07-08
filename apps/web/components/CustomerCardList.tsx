@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { IoCallOutline, IoCopyOutline, IoMailOutline, IoLocationOutline, IoEllipsisHorizontal, IoPencilOutline, IoTrashOutline } from 'react-icons/io5';
 import { Menu } from '@headlessui/react';
 import SkeletonCard from './SkeletonCard';
@@ -17,6 +17,8 @@ interface CustomerCardListProps {
 
 const CustomerCardList: React.FC<Omit<CustomerCardListProps, 'setSelectedCustomer'>> = ({ customers, openEditModal, setShowDeleteConfirm, searchTerm = '', highlightMatch, isLoading }) => {
   const { selectedCustomer, openCustomerModal, closeCustomerModal, fetchCustomers, setCustomers } = useCustomerContext();
+  const [menuPositions, setMenuPositions] = useState<Record<string, 'top' | 'bottom'>>({});
+  const autoCloseTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   if (isLoading) {
     return (
@@ -64,31 +66,96 @@ const CustomerCardList: React.FC<Omit<CustomerCardListProps, 'setSelectedCustome
                 </div>
               </div>
               <Menu as="div" className="relative">
-                <Menu.Button className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400">
-                  <IoEllipsisHorizontal className="w-6 h-6 text-gray-500" />
-                </Menu.Button>
-                <Menu.Items className="absolute right-0 top-12 z-30 w-56 origin-top-right bg-white border border-gray-200 rounded-xl shadow-xl focus:outline-none py-2">
+                {({ open }) => {
+                  // Calculate position when menu opens
+                  React.useEffect(() => {
+                    if (open) {
+                      const button = document.querySelector(`[data-menu-button="${customer.id}"]`);
+                      if (button) {
+                        const rect = button.getBoundingClientRect();
+                        const viewportHeight = window.innerHeight;
+                        const menuHeight = 300; // Approximate menu height
+                        const spaceBelow = viewportHeight - rect.bottom;
+                        const spaceAbove = rect.top;
+                        
+                        // If there's not enough space below but enough space above, open upward
+                        if (spaceBelow < menuHeight && spaceAbove > menuHeight) {
+                          setMenuPositions(prev => ({ ...prev, [customer.id]: 'top' }));
+                        } else {
+                          setMenuPositions(prev => ({ ...prev, [customer.id]: 'bottom' }));
+                        }
+                      }
+                      
+                      // Start auto-close timer (3 seconds)
+                      autoCloseTimerRef.current = setTimeout(() => {
+                        // Close the menu by clicking outside
+                        const event = new MouseEvent('mousedown', { bubbles: true });
+                        document.dispatchEvent(event);
+                      }, 3000);
+                    } else {
+                      // Clear timer when menu closes
+                      if (autoCloseTimerRef.current) {
+                        clearTimeout(autoCloseTimerRef.current);
+                      }
+                    }
+                    
+                    return () => {
+                      if (autoCloseTimerRef.current) {
+                        clearTimeout(autoCloseTimerRef.current);
+                      }
+                    };
+                  }, [open, customer.id]);
+                  
+                  const menuPosition = menuPositions[customer.id] || 'bottom';
+                  
+                  return (
+                    <>
+                      <Menu.Button 
+                        className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        data-menu-button={customer.id}
+                      >
+                        <IoEllipsisHorizontal className="w-6 h-6 text-gray-500" />
+                      </Menu.Button>
+                      <Menu.Items className={`absolute right-0 z-50 w-56 bg-white border border-gray-200 rounded-xl shadow-xl focus:outline-none py-2 group ${
+                        menuPosition === 'top' 
+                          ? 'bottom-full mb-2 origin-bottom-right' 
+                          : 'top-full mt-2 origin-top-right'
+                      }`}>
                   <Menu.Item>
                     {({ active }) => (
                       <a
                         href={`tel:${customer.phone}`}
-                        className={`flex items-center gap-3 px-4 py-2 text-sm ${active ? 'bg-gray-100' : ''}`}
+                        className={`flex items-center gap-3 px-4 py-2 text-sm transition-all duration-200 ease-in-out transform hover:scale-[1.02] cursor-pointer ${
+                          active 
+                            ? 'bg-blue-50 text-blue-700 shadow-sm' 
+                            : 'hover:bg-gray-50 hover:text-gray-700 hover:shadow-sm'
+                        }`}
                         aria-label="Call"
                         onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); } }}
                       >
-                        <IoCallOutline className="w-5 h-5 text-blue-500" /> Call
+                        <span className={`transition-transform duration-200 ${active ? 'scale-110' : 'group-hover:scale-110'}`}>
+                          <IoCallOutline className="w-5 h-5 text-blue-500" />
+                        </span>
+                        <span className="font-medium">Call</span>
                       </a>
                     )}
                   </Menu.Item>
                   <Menu.Item>
                     {({ active }) => (
                       <button
-                        className={`flex items-center gap-3 px-4 py-2 text-sm w-full ${active ? 'bg-gray-100' : ''}`}
+                        className={`flex items-center gap-3 px-4 py-2 text-sm w-full transition-all duration-200 ease-in-out transform hover:scale-[1.02] cursor-pointer ${
+                          active 
+                            ? 'bg-blue-50 text-blue-700 shadow-sm' 
+                            : 'hover:bg-gray-50 hover:text-gray-700 hover:shadow-sm'
+                        }`}
                         onClick={() => { navigator.clipboard.writeText(customer.phone); }}
                         aria-label="Copy phone"
                         onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigator.clipboard.writeText(customer.phone); } }}
                       >
-                        <IoCopyOutline className="w-5 h-5 text-blue-500" /> Copy Phone
+                        <span className={`transition-transform duration-200 ${active ? 'scale-110' : 'group-hover:scale-110'}`}>
+                          <IoCopyOutline className="w-5 h-5 text-blue-500" />
+                        </span>
+                        <span className="font-medium">Copy Phone</span>
                       </button>
                     )}
                   </Menu.Item>
@@ -96,23 +163,37 @@ const CustomerCardList: React.FC<Omit<CustomerCardListProps, 'setSelectedCustome
                     {({ active }) => (
                       <a
                         href={`mailto:${customer.email}`}
-                        className={`flex items-center gap-3 px-4 py-2 text-sm ${active ? 'bg-gray-100' : ''}`}
+                        className={`flex items-center gap-3 px-4 py-2 text-sm transition-all duration-200 ease-in-out transform hover:scale-[1.02] cursor-pointer ${
+                          active 
+                            ? 'bg-blue-50 text-blue-700 shadow-sm' 
+                            : 'hover:bg-gray-50 hover:text-gray-700 hover:shadow-sm'
+                        }`}
                         aria-label="Email"
                         onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); } }}
                       >
-                        <IoMailOutline className="w-5 h-5 text-blue-500" /> Email
+                        <span className={`transition-transform duration-200 ${active ? 'scale-110' : 'group-hover:scale-110'}`}>
+                          <IoMailOutline className="w-5 h-5 text-blue-500" />
+                        </span>
+                        <span className="font-medium">Email</span>
                       </a>
                     )}
                   </Menu.Item>
                   <Menu.Item>
                     {({ active }) => (
                       <button
-                        className={`flex items-center gap-3 px-4 py-2 text-sm w-full ${active ? 'bg-gray-100' : ''}`}
+                        className={`flex items-center gap-3 px-4 py-2 text-sm w-full transition-all duration-200 ease-in-out transform hover:scale-[1.02] cursor-pointer ${
+                          active 
+                            ? 'bg-blue-50 text-blue-700 shadow-sm' 
+                            : 'hover:bg-gray-50 hover:text-gray-700 hover:shadow-sm'
+                        }`}
                         onClick={() => { navigator.clipboard.writeText(customer.email || ''); }}
                         aria-label="Copy email"
                         onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigator.clipboard.writeText(customer.email || ''); } }}
                       >
-                        <IoCopyOutline className="w-5 h-5 text-blue-500" /> Copy Email
+                        <span className={`transition-transform duration-200 ${active ? 'scale-110' : 'group-hover:scale-110'}`}>
+                          <IoCopyOutline className="w-5 h-5 text-blue-500" />
+                        </span>
+                        <span className="font-medium">Copy Email</span>
                       </button>
                     )}
                   </Menu.Item>
@@ -122,23 +203,37 @@ const CustomerCardList: React.FC<Omit<CustomerCardListProps, 'setSelectedCustome
                         href={`https://www.google.com/maps/search/${encodeURIComponent(address)}`}
                         target="_blank"
                         rel="noreferrer"
-                        className={`flex items-center gap-3 px-4 py-2 text-sm ${active ? 'bg-gray-100' : ''}`}
+                        className={`flex items-center gap-3 px-4 py-2 text-sm transition-all duration-200 ease-in-out transform hover:scale-[1.02] cursor-pointer ${
+                          active 
+                            ? 'bg-blue-50 text-blue-700 shadow-sm' 
+                            : 'hover:bg-gray-50 hover:text-gray-700 hover:shadow-sm'
+                        }`}
                         aria-label="View on map"
                         onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); } }}
                       >
-                        <IoLocationOutline className="w-5 h-5 text-blue-500" /> View on Map
+                        <span className={`transition-transform duration-200 ${active ? 'scale-110' : 'group-hover:scale-110'}`}>
+                          <IoLocationOutline className="w-5 h-5 text-blue-500" />
+                        </span>
+                        <span className="font-medium">View on Map</span>
                       </a>
                     )}
                   </Menu.Item>
                   <Menu.Item>
                     {({ active }) => (
                       <button
-                        className={`flex items-center gap-3 px-4 py-2 text-sm w-full ${active ? 'bg-gray-100' : ''}`}
+                        className={`flex items-center gap-3 px-4 py-2 text-sm w-full transition-all duration-200 ease-in-out transform hover:scale-[1.02] cursor-pointer ${
+                          active 
+                            ? 'bg-blue-50 text-blue-700 shadow-sm' 
+                            : 'hover:bg-gray-50 hover:text-gray-700 hover:shadow-sm'
+                        }`}
                         onClick={() => { navigator.clipboard.writeText(address); }}
                         aria-label="Copy address"
                         onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigator.clipboard.writeText(address); } }}
                       >
-                        <IoCopyOutline className="w-5 h-5 text-blue-500" /> Copy Address
+                        <span className={`transition-transform duration-200 ${active ? 'scale-110' : 'group-hover:scale-110'}`}>
+                          <IoCopyOutline className="w-5 h-5 text-blue-500" />
+                        </span>
+                        <span className="font-medium">Copy Address</span>
                       </button>
                     )}
                   </Menu.Item>
@@ -146,29 +241,46 @@ const CustomerCardList: React.FC<Omit<CustomerCardListProps, 'setSelectedCustome
                   <Menu.Item>
                     {({ active }) => (
                       <button
-                        className={`flex items-center gap-3 px-4 py-2 text-sm w-full ${active ? 'bg-gray-100' : ''}`}
+                        className={`flex items-center gap-3 px-4 py-2 text-sm w-full transition-all duration-200 ease-in-out transform hover:scale-[1.02] cursor-pointer ${
+                          active 
+                            ? 'bg-blue-50 text-blue-700 shadow-sm' 
+                            : 'hover:bg-gray-50 hover:text-gray-700 hover:shadow-sm'
+                        }`}
                         onClick={() => openEditModal(customer)}
                         aria-label="Edit"
                         onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openEditModal(customer); } }}
                       >
-                        <IoPencilOutline className="w-5 h-5 text-blue-500" /> Edit
+                        <span className={`transition-transform duration-200 ${active ? 'scale-110' : 'group-hover:scale-110'}`}>
+                          <IoPencilOutline className="w-5 h-5 text-blue-500" />
+                        </span>
+                        <span className="font-medium">Edit</span>
                       </button>
                     )}
                   </Menu.Item>
                   <Menu.Item>
                     {({ active }) => (
                       <button
-                        className={`flex items-center gap-3 px-4 py-2 text-sm w-full text-red-600 ${active ? 'bg-gray-100' : ''}`}
+                        className={`flex items-center gap-3 px-4 py-2 text-sm w-full transition-all duration-200 ease-in-out transform hover:scale-[1.02] cursor-pointer ${
+                          active 
+                            ? 'bg-red-50 text-red-700 shadow-sm' 
+                            : 'hover:bg-red-50 hover:text-red-700 hover:shadow-sm'
+                        }`}
                         onClick={() => { setShowDeleteConfirm(true); }}
                         aria-label="Delete"
                         onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowDeleteConfirm(true); } }}
                       >
-                        <IoTrashOutline className="w-5 h-5" /> Delete
+                        <span className={`transition-transform duration-200 ${active ? 'scale-110' : 'group-hover:scale-110'}`}>
+                          <IoTrashOutline className="w-5 h-5" />
+                        </span>
+                        <span className="font-medium">Delete</span>
                       </button>
                     )}
                   </Menu.Item>
                 </Menu.Items>
-              </Menu>
+                      </>
+                    );
+                  }}
+                </Menu>
             </div>
             {/* Info section: Phone, Email, Address with subtle icons */}
             <div className="flex flex-col gap-3 mt-1">
