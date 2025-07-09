@@ -353,7 +353,7 @@ export default function CustomersPage() {
               Add Customer
             </button>
         </div>
-      <div className='pt-[44px] w-full md:pr-8 mx-2'>
+      <div className='pt-[44px] w-fit md:pr-8 mx-auto'>
         <div className="hidden md:block">
           <CustomerTable
             customers={paginatedCustomers}

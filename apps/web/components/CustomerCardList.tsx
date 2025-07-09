@@ -37,7 +37,7 @@ const CustomerCardList: React.FC<Omit<CustomerCardListProps, 'setSelectedCustome
         return (
           <div
             key={customer.id}
-            className="bg-white rounded-2xl shadow-lg border border-gray-100 px-3 py-5 flex flex-col gap-3 relative md:cursor-default md:pointer-events-none md:opacity-100"
+            className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 md:p-5 flex flex-col gap-3 relative md:cursor-default md:pointer-events-none md:opacity-100 w-[calc(100vw-1rem)] max-w-full mx-[-0.5rem] md:mx-0 md:w-auto"
             tabIndex={0}
             role="button"
             aria-label={`Open actions for ${customer.firstName} ${customer.lastName}`}
@@ -54,7 +54,7 @@ const CustomerCardList: React.FC<Omit<CustomerCardListProps, 'setSelectedCustome
             {/* Top row: Avatar, Name, ... menu */}
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-3">
-                <div className="w-16 h-16 min-w-[4rem] min-h-[4rem] rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-2xl">
+                <div className="w-14 h-14 min-w-[3.5rem] min-h-[3.5rem] rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-2xl">
                   {customer.firstName?.[0]}{customer.lastName?.[0]}
                 </div>
                 <div>
