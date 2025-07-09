@@ -6,6 +6,7 @@ import { AddPianoModal } from './AddPianoModal';
 import { EditPianoModal } from './EditPianoModal';
 import type { Piano } from '../types/piano';
 import type { Customer } from '../types/customer';
+import { HiPencil, HiTrash } from 'react-icons/hi';
 
 interface AddCustomerModalProps {
   isOpen: boolean;
@@ -243,70 +244,80 @@ export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
     setEditPianoIndex(null);
   };
 
+  const handleDeletePiano = (deletedPiano: Piano) => {
+    setPianos(prev => prev.filter((p) => p.id !== deletedPiano.id));
+    setIsEditPianoModalOpen(false);
+    setEditPianoIndex(null);
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title={editingCustomerId ? 'Edit Customer' : 'Add New Customer'} widthClass="max-w-2xl">
-      <div className="space-y-4 max-h-[80vh] overflow-y-auto px-4">
-        <div className="flex flex-col md:flex-row gap-2">
-          <div className="w-full md:w-1/2">
-            <label className="block text-sm font-medium mb-1 text-gray-700">First Name</label>
-            <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.firstName} onChange={e => handleInputChange('firstName', e.target.value)} />
-            {errors.firstName && <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>}
-          </div>
-          <div className="w-full md:w-1/2">
-            <label className="block text-sm font-medium mb-1 text-gray-700">Last Name</label>
-            <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.lastName} onChange={e => handleInputChange('lastName', e.target.value)} />
-            {errors.lastName && <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>}
-          </div>
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1 text-gray-700">Company (optional)</label>
-          <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.companyName} onChange={e => handleInputChange('companyName', e.target.value)} />
-        </div>
-        <div className="flex flex-col md:flex-row gap-2">
-          <div className="w-full md:w-1/2">
-            <label className="block text-sm font-medium mb-1 text-gray-700">Email</label>
-            <input type="email" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.email} onChange={e => handleInputChange('email', e.target.value)} />
-            {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
-          </div>
-          <div className="w-full md:w-1/2">
-            <label className="block text-sm font-medium mb-1 text-gray-700">Phone</label>
-            <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.phone} maxLength={14} onChange={e => handleInputChange('phone', e.target.value)} />
-            {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
-          </div>
-        </div>
-        <div className="flex flex-col md:flex-row gap-2">
-          <div className="w-full md:w-1/2">
-            <label className="block text-sm font-medium mb-1 text-gray-700">Address</label>
-            <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.address} onChange={e => handleInputChange('address', e.target.value)} />
-            {errors.address && <p className="mt-1 text-sm text-red-600">{errors.address}</p>}
-          </div>
-          <div className="w-full md:w-1/2 flex flex-col md:flex-row gap-2">
-            <div className="w-full md:w-1/3">
-              <label className="block text-sm font-medium mb-1 text-gray-700">City</label>
-              <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.city} onChange={e => handleInputChange('city', e.target.value)} />
+      <div className="flex flex-col h-full">
+        {/* Fixed Form Section */}
+        <div className="space-y-4 flex-shrink-0">
+          <div className="flex flex-col md:flex-row gap-2">
+            <div className="w-full md:w-1/2">
+              <label className="block text-sm font-medium mb-1 text-gray-700">First Name</label>
+              <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.firstName} onChange={e => handleInputChange('firstName', e.target.value)} />
+              {errors.firstName && <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>}
             </div>
-            <div className="w-full md:w-1/3">
-              <label className="block text-sm font-medium mb-1 text-gray-700">State</label>
-              <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.state} onChange={e => handleInputChange('state', e.target.value)} />
-            </div>
-            <div className="w-full md:w-1/3">
-              <label className="block text-sm font-medium mb-1 text-gray-700">Zip Code</label>
-              <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.zipCode} onChange={e => handleInputChange('zipCode', e.target.value)} />
+            <div className="w-full md:w-1/2">
+              <label className="block text-sm font-medium mb-1 text-gray-700">Last Name</label>
+              <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.lastName} onChange={e => handleInputChange('lastName', e.target.value)} />
+              {errors.lastName && <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>}
             </div>
           </div>
+          <div>
+            <label className="block text-sm font-medium mb-1 text-gray-700">Company (optional)</label>
+            <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.companyName} onChange={e => handleInputChange('companyName', e.target.value)} />
+          </div>
+          <div className="flex flex-col md:flex-row gap-2">
+            <div className="w-full md:w-1/2">
+              <label className="block text-sm font-medium mb-1 text-gray-700">Email</label>
+              <input type="email" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.email} onChange={e => handleInputChange('email', e.target.value)} />
+              {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
+            </div>
+            <div className="w-full md:w-1/2">
+              <label className="block text-sm font-medium mb-1 text-gray-700">Phone</label>
+              <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.phone} maxLength={14} onChange={e => handleInputChange('phone', e.target.value)} />
+              {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
+            </div>
+          </div>
+          <div className="flex flex-col md:flex-row gap-2">
+            <div className="w-full md:w-1/2">
+              <label className="block text-sm font-medium mb-1 text-gray-700">Address</label>
+              <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.address} onChange={e => handleInputChange('address', e.target.value)} />
+              {errors.address && <p className="mt-1 text-sm text-red-600">{errors.address}</p>}
+            </div>
+            <div className="w-full md:w-1/2 flex flex-col md:flex-row gap-2">
+              <div className="w-full md:w-1/3">
+                <label className="block text-sm font-medium mb-1 text-gray-700">City</label>
+                <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.city} onChange={e => handleInputChange('city', e.target.value)} />
+              </div>
+              <div className="w-full md:w-1/3">
+                <label className="block text-sm font-medium mb-1 text-gray-700">State</label>
+                <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.state} onChange={e => handleInputChange('state', e.target.value)} />
+              </div>
+              <div className="w-full md:w-1/3">
+                <label className="block text-sm font-medium mb-1 text-gray-700">Zip Code</label>
+                <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.zipCode} onChange={e => handleInputChange('zipCode', e.target.value)} />
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-col md:flex-row gap-4">
+            <label className="flex items-center text-sm text-gray-700">
+              <input type="checkbox" className="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500" checked={form.textUpdates} onChange={e => handleInputChange('textUpdates', e.target.checked)} />
+              Text Updates
+            </label>
+            <label className="flex items-center text-sm text-gray-700">
+              <input type="checkbox" className="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500" checked={form.emailUpdates} onChange={e => handleInputChange('emailUpdates', e.target.checked)} />
+              Email Updates
+            </label>
+          </div>
         </div>
-        <div className="flex flex-col md:flex-row gap-4">
-          <label className="flex items-center text-sm text-gray-700">
-            <input type="checkbox" className="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500" checked={form.textUpdates} onChange={e => handleInputChange('textUpdates', e.target.checked)} />
-            Text Updates
-          </label>
-          <label className="flex items-center text-sm text-gray-700">
-            <input type="checkbox" className="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500" checked={form.emailUpdates} onChange={e => handleInputChange('emailUpdates', e.target.checked)} />
-            Email Updates
-          </label>
-        </div>
-        {/* Pianos Section */}
-        <div>
+
+        {/* Scrollable Pianos Section */}
+        <div className="flex-1 min-h-0 mt-4">
           <div className="flex items-center justify-between mb-2">
             <h4 className="text-md font-semibold text-gray-900">Pianos</h4>
             <button
@@ -317,49 +328,51 @@ export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
               + Add Piano
             </button>
           </div>
-          {pianos.length === 0 ? (
-            <p className="text-gray-500 text-center py-2">No pianos added yet</p>
-          ) : (
-            <ul className="divide-y divide-gray-200">
-              {pianos.map((piano, idx) => (
-                <li key={idx} className="py-2 flex items-center justify-between group">
-                  <div className="flex items-center gap-3">
-                    {piano.photoUrl ? (
-                      <div className="w-16 h-16 rounded-lg overflow-hidden border border-gray-200 flex items-center justify-center">
-                        <img src={piano.photoUrl} alt="Piano" className="w-full h-full object-cover" />
-                      </div>
-                    ) : (
-                      <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center text-gray-400 group-hover:bg-gray-300">
-                        <span className="text-2xl">🎹</span>
-                      </div>
-                    )}
-                    <div>
-                      <div className="font-medium text-gray-900">{piano.type} {piano.brand && `- ${piano.brand}`}{piano.model && ` ${piano.model}`}{piano.year && ` (${piano.year})`}</div>
-                      <div className="text-xs text-gray-500">Serial: {piano.serialNumber || 'N/A'}</div>
-                      <div className="text-xs text-gray-500">Last Service: {piano.lastServiceDate ? new Date(piano.lastServiceDate).toLocaleDateString() : 'Never'}</div>
-                      {piano.notes && <div className="text-xs text-gray-400 mt-1">{piano.notes}</div>}
-                    </div>
-                  </div>
-                  <div className="flex flex-col md:flex-row gap-1 md:gap-2 items-end md:items-center ml-2">
-                    <button
-                      type="button"
-                      onClick={() => handleEditPiano(idx)}
-                      className="text-blue-600 hover:underline text-xs md:text-sm"
+          <div className="border border-gray-200 rounded-lg overflow-hidden">
+            {pianos.length === 0 ? (
+              <div className="p-4 text-center">
+                <p className="text-gray-500">No pianos added yet</p>
+              </div>
+            ) : (
+              <div className="max-h-64 overflow-y-auto">
+                <ul className="divide-y divide-gray-200">
+                  {pianos.map((piano, idx) => (
+                    <li
+                      key={idx}
+                      className="py-3 px-4 flex items-center justify-between group hover:bg-gray-50"
                     >
-                      Edit
-                    </button>
-                    <button
-                      type="button"
-                      onClick={e => { e.stopPropagation(); handleRemovePiano(idx); }}
-                      className="text-red-500 hover:underline text-xs md:text-sm"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        {piano.photoUrl ? (
+                          <div className="w-16 h-16 rounded-lg overflow-hidden border border-gray-200 flex items-center justify-center flex-shrink-0">
+                            <img src={piano.photoUrl} alt="Piano" className="w-full h-full object-cover" />
+                          </div>
+                        ) : (
+                          <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center text-gray-400 group-hover:bg-gray-300 flex-shrink-0">
+                            <span className="text-2xl">🎹</span>
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <div className="font-medium text-gray-900 truncate">{piano.type} {piano.brand && `- ${piano.brand}`}{piano.model && ` ${piano.model}`}{piano.year && ` (${piano.year})`}</div>
+                          <div className="text-xs text-gray-500">Serial: {piano.serialNumber || 'N/A'}</div>
+                          <div className="text-xs text-gray-500">Last Service: {piano.lastServiceDate ? new Date(piano.lastServiceDate).toLocaleDateString() : 'Never'}</div>
+                          {piano.notes && <div className="text-xs text-gray-400 mt-1 truncate">{piano.notes}</div>}
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleEditPiano(idx)}
+                        className="px-3 py-1 rounded bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 text-sm font-medium focus:outline-none min-w-[44px] min-h-[44px] ml-3 flex-shrink-0"
+                      >
+                        Edit
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                {/* Add bottom padding for sticky bar on mobile INSIDE scrollable area */}
+                <div className="h-20 md:hidden" />
+              </div>
+            )}
+          </div>
         </div>
       </div>
       <AddPianoModal
@@ -372,10 +385,12 @@ export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
           isOpen={isEditPianoModalOpen}
           onClose={handleCloseEditPiano}
           onSave={handleSaveEditPiano}
+          onDelete={handleDeletePiano}
           initialValues={pianos[editPianoIndex]!}
         />
       )}
-      <div className="flex justify-end space-x-2 pt-2">
+      {/* Sticky Action Bar */}
+      <div className="fixed bottom-0 left-0 w-full z-50 bg-white border-t border-gray-200 px-4 py-3 flex justify-end space-x-2 md:static md:border-0 md:bg-transparent md:px-0 md:py-0">
         {errors.form && <div className="text-red-600 text-sm flex-1 flex items-center">{errors.form}</div>}
         <button
           type="button"

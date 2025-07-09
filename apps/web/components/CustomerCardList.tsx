@@ -37,7 +37,7 @@ const CustomerCardList: React.FC<Omit<CustomerCardListProps, 'setSelectedCustome
         return (
           <div
             key={customer.id}
-            className="bg-white rounded-2xl shadow-lg border border-gray-100 p-5 flex flex-col gap-3 relative md:cursor-default md:pointer-events-none md:opacity-100"
+            className="bg-white rounded-2xl shadow-lg border border-gray-100 px-3 py-5 flex flex-col gap-3 relative md:cursor-default md:pointer-events-none md:opacity-100"
             tabIndex={0}
             role="button"
             aria-label={`Open actions for ${customer.firstName} ${customer.lastName}`}
@@ -52,17 +52,25 @@ const CustomerCardList: React.FC<Omit<CustomerCardListProps, 'setSelectedCustome
             }}
           >
             {/* Top row: Avatar, Name, ... menu */}
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 min-w-[3rem] min-h-[3rem] rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xl">
+                <div className="w-16 h-16 min-w-[4rem] min-h-[4rem] rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-2xl">
                   {customer.firstName?.[0]}{customer.lastName?.[0]}
                 </div>
-                <div className="font-bold text-xl text-gray-900">
-                  {highlightMatch ? (
-                    <>{highlightMatch(customer.firstName + ' ' + customer.lastName, searchTerm)}</>
-                  ) : (
-                    <>{customer.firstName} {customer.lastName}</>
-                  )}
+                <div>
+                  <div className="font-bold text-lg text-gray-900">
+                    {highlightMatch ? (
+                      <>{highlightMatch(customer.firstName + ' ' + customer.lastName, searchTerm)}</>
+                    ) : (
+                      <>{customer.firstName} {customer.lastName}</>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1 mt-1">
+                    <span className="text-xs text-gray-500 font-medium">Pianos</span>
+                    <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 ml-1 min-w-[1.5em]">
+                      {customer.pianos?.length || 0}
+                    </span>
+                  </div>
                 </div>
               </div>
               <Menu as="div" className="relative">
@@ -113,6 +121,7 @@ const CustomerCardList: React.FC<Omit<CustomerCardListProps, 'setSelectedCustome
                       <Menu.Button 
                         className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400"
                         data-menu-button={customer.id}
+                        onClick={e => e.stopPropagation()}
                       >
                         <IoEllipsisHorizontal className="w-6 h-6 text-gray-500" />
                       </Menu.Button>
@@ -282,48 +291,7 @@ const CustomerCardList: React.FC<Omit<CustomerCardListProps, 'setSelectedCustome
                   }}
                 </Menu>
             </div>
-            {/* Info section: Phone, Email, Address with subtle icons */}
-            <div className="flex flex-col gap-3 mt-1">
-              <div className="flex items-center gap-2">
-                <IoCallOutline className="w-5 h-5 text-blue-400" />
-                <a
-                  href={`tel:${customer.phone}`}
-                  className="text-gray-900 font-medium text-base hover:text-blue-600 transition-colors focus:outline-none"
-                  style={{ textDecoration: 'none' }}
-                  onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); } }}
-                >
-                  {highlightMatch ? highlightMatch(customer.phone, searchTerm) : customer.phone}
-                </a>
-              </div>
-              {customer.email && (
-                <div className="flex items-center gap-2">
-                  <IoMailOutline className="w-5 h-5 text-blue-400" />
-                  <a
-                    href={`mailto:${customer.email}`}
-                    className="text-blue-700 font-medium text-sm hover:text-blue-900 transition-colors focus:outline-none"
-                    style={{ textDecoration: 'none' }}
-                    onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); } }}
-                  >
-                    {highlightMatch ? highlightMatch(customer.email, searchTerm) : customer.email}
-                  </a>
-                </div>
-              )}
-              {address && (
-                <div className="flex items-center gap-2">
-                  <IoLocationOutline className="w-5 h-5 text-gray-400" />
-                  <a
-                    href={`https://www.google.com/maps/search/${encodeURIComponent(address)}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-gray-500 text-sm hover:text-blue-600 transition-colors focus:outline-none"
-                    style={{ textDecoration: 'none' }}
-                    onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); } }}
-                  >
-                    {highlightMatch ? highlightMatch(address, searchTerm) : address}
-                  </a>
-                </div>
-              )}
-            </div>
+            {/* Remove info section: phone, email, address */}
           </div>
         );
       })}

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Modal from './Modal';
 import ImageUpload from './ImageUpload';
+import ComboBox from './ComboBox';
 
 interface AddPianoModalProps {
   isOpen: boolean;
@@ -84,6 +85,11 @@ export const AddPianoModal: React.FC<AddPianoModalProps> = ({
     onClose();
   };
 
+  const PIANO_BRANDS = [
+    '',
+    'Yamaha', 'Steinway & Sons', 'Kawai', 'Baldwin', 'Boston', 'Bechstein', 'Blüthner', 'Bösendorfer', 'Chickering', 'Essex', 'Fazioli', 'Grotrian', 'Knabe', 'Mason & Hamlin', 'Petrof', 'Samick', 'Schimmel', 'Seiler', 'Young Chang', 'Wurlitzer', 'Weber', 'Story & Clark', 'Pearl River', 'Hallet, Davis & Co.', 'August Förster', 'Charles R. Walter', 'Steck', 'Hardman', 'Kimball', 'Kohler & Campbell', 'Pramberger', 'Ritmüller', 'Sohmer', 'Weinbach', 'Zimmermann', 'Heintzman', 'Hobart M. Cable', 'Lester', 'Lindeman', 'Mathushek', 'Nordiska', 'Sauter', 'Shigeru Kawai', 'Tokai', 'Vose & Sons', 'Winter & Co.', 'Other'
+  ];
+
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title="Add Piano" widthClass="max-w-lg">
       <div className="space-y-4">
@@ -105,8 +111,13 @@ export const AddPianoModal: React.FC<AddPianoModalProps> = ({
         </div>
         <div className="flex gap-2">
           <div className="w-1/2">
-            <label className="block text-sm font-medium mb-1 text-gray-700">Brand</label>
-            <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.brand} onChange={e => handleInputChange('brand', e.target.value)} />
+            <ComboBox
+              label="Brand"
+              options={PIANO_BRANDS}
+              value={form.brand}
+              onChange={val => handleInputChange('brand', val)}
+              placeholder="Select or type a brand"
+            />
           </div>
           <div className="w-1/2">
             <label className="block text-sm font-medium mb-1 text-gray-700">Model</label>

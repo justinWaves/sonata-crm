@@ -2,18 +2,21 @@ import React, { useState, useEffect, useRef } from 'react';
 import Modal from './Modal';
 import type { Piano } from '../types/piano';
 import ImageUpload from './ImageUpload';
+import ComboBox from './ComboBox';
 
 interface EditPianoModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (piano: Piano) => void;
+  onDelete?: (piano: Piano) => void;
   initialValues: Piano;
 }
 
-export const EditPianoModal: React.FC<EditPianoModalProps> = ({ isOpen, onClose, onSave, initialValues }) => {
+export const EditPianoModal: React.FC<EditPianoModalProps> = ({ isOpen, onClose, onSave, onDelete, initialValues }) => {
   const [form, setForm] = useState<Piano>({ ...initialValues });
   const [isDirty, setIsDirty] = useState(false);
   const [showImageUpload, setShowImageUpload] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const initialForm = useRef<Piano>(initialValues);
 
   useEffect(() => {
@@ -64,6 +67,16 @@ export const EditPianoModal: React.FC<EditPianoModalProps> = ({ isOpen, onClose,
     setShowImageUpload(false);
     onClose();
   };
+
+  const handleDelete = () => {
+    setShowDeleteConfirm(false);
+    if (onDelete) onDelete(form);
+  };
+
+  const PIANO_BRANDS = [
+    '',
+    'Yamaha', 'Steinway & Sons', 'Kawai', 'Baldwin', 'Boston', 'Bechstein', 'Blüthner', 'Bösendorfer', 'Chickering', 'Essex', 'Fazioli', 'Grotrian', 'Knabe', 'Mason & Hamlin', 'Petrof', 'Samick', 'Schimmel', 'Seiler', 'Young Chang', 'Wurlitzer', 'Weber', 'Story & Clark', 'Pearl River', 'Hallet, Davis & Co.', 'August Förster', 'Charles R. Walter', 'Steck', 'Hardman', 'Kimball', 'Kohler & Campbell', 'Pramberger', 'Ritmüller', 'Sohmer', 'Weinbach', 'Zimmermann', 'Heintzman', 'Hobart M. Cable', 'Lester', 'Lindeman', 'Mathushek', 'Nordiska', 'Sauter', 'Shigeru Kawai', 'Tokai', 'Vose & Sons', 'Winter & Co.', 'Other'
+  ];
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title="Edit Piano" widthClass="max-w-lg">
@@ -130,8 +143,13 @@ export const EditPianoModal: React.FC<EditPianoModalProps> = ({ isOpen, onClose,
             </select>
           </div>
           <div className="w-1/2">
-            <label className="block text-sm font-medium mb-1 text-gray-700">Brand</label>
-            <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.brand || ''} onChange={e => handleInputChange('brand', e.target.value as Piano['brand'])} />
+            <ComboBox
+              label="Brand"
+              options={PIANO_BRANDS}
+              value={form.brand || ''}
+              onChange={val => handleInputChange('brand', val as Piano['brand'])}
+              placeholder="Select or type a brand"
+            />
           </div>
         </div>
         <div className="flex gap-2">
@@ -168,17 +186,53 @@ export const EditPianoModal: React.FC<EditPianoModalProps> = ({ isOpen, onClose,
           />
         </Modal>
       )}
-      <div className="flex justify-end space-x-2 pt-2">
-        <button type="button" onClick={handleClose} className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg font-medium">Cancel</button>
-        <button
-          type="button"
-          onClick={handleSave}
-          className="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium shadow-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={!isDirty}
-        >
-          Save
-        </button>
+      {/* Delete Piano Button */}
+      <div className="flex justify-between items-center pt-2">
+        {onDelete && (
+          <button
+            type="button"
+            onClick={() => setShowDeleteConfirm(true)}
+            className="px-4 py-2 rounded-lg text-red-600 font-medium text-base hover:bg-red-50 focus:outline-none"
+          >
+            Delete Piano
+          </button>
+        )}
+        <div className="flex space-x-2 ml-auto">
+          <button type="button" onClick={handleClose} className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg font-medium">Cancel</button>
+          <button
+            type="button"
+            onClick={handleSave}
+            className="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium shadow-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!isDirty}
+          >
+            Save
+          </button>
+        </div>
       </div>
+      {/* Confirm Delete Modal */}
+      {showDeleteConfirm && (
+        <Modal isOpen={showDeleteConfirm} onClose={() => setShowDeleteConfirm(false)} title="Delete Piano?" widthClass="max-w-md">
+          <div className="p-4 text-center">
+            <p className="mb-6 text-gray-700">Are you sure you want to delete this piano? This action cannot be undone.</p>
+            <div className="flex justify-center gap-4">
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(false)}
+                className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 font-medium hover:bg-gray-200"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                className="px-4 py-2 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </Modal>
   );
 };
