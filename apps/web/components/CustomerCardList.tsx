@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { IoCallOutline, IoCopyOutline, IoMailOutline, IoLocationOutline, IoEllipsisHorizontal, IoPencilOutline, IoTrashOutline } from 'react-icons/io5';
 import { Menu } from '@headlessui/react';
+import { toast } from 'react-hot-toast';
 import SkeletonCard from './SkeletonCard';
 import type { Customer } from '../types/customer';
 import CustomerCardModal from './CustomerCardModal';
@@ -65,6 +66,12 @@ const CustomerCardList: React.FC<Omit<CustomerCardListProps, 'setSelectedCustome
                       <>{customer.firstName} {customer.lastName}</>
                     )}
                   </div>
+                  {/* City, State, Zip */}
+                  {customer.city && customer.state && (
+                    <div className="text-sm text-gray-600 mt-1">
+                      {customer.city}, {customer.state} {customer.zipCode}
+                    </div>
+                  )}
                   <div className="flex items-center gap-1 mt-1">
                     <span className="text-xs text-gray-500 font-medium">Pianos</span>
                     <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 ml-1 min-w-[1.5em]">
@@ -157,7 +164,7 @@ const CustomerCardList: React.FC<Omit<CustomerCardListProps, 'setSelectedCustome
                             ? 'bg-blue-50 text-blue-700 shadow-sm' 
                             : 'hover:bg-gray-50 hover:text-gray-700 hover:shadow-sm'
                         }`}
-                        onClick={() => { navigator.clipboard.writeText(customer.phone); }}
+                        onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(customer.phone); toast.success('Phone copied!'); }}
                         aria-label="Copy phone"
                         onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigator.clipboard.writeText(customer.phone); } }}
                       >
@@ -195,7 +202,7 @@ const CustomerCardList: React.FC<Omit<CustomerCardListProps, 'setSelectedCustome
                             ? 'bg-blue-50 text-blue-700 shadow-sm' 
                             : 'hover:bg-gray-50 hover:text-gray-700 hover:shadow-sm'
                         }`}
-                        onClick={() => { navigator.clipboard.writeText(customer.email || ''); }}
+                        onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(customer.email || ''); toast.success('Email copied!'); }}
                         aria-label="Copy email"
                         onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigator.clipboard.writeText(customer.email || ''); } }}
                       >
@@ -235,7 +242,7 @@ const CustomerCardList: React.FC<Omit<CustomerCardListProps, 'setSelectedCustome
                             ? 'bg-blue-50 text-blue-700 shadow-sm' 
                             : 'hover:bg-gray-50 hover:text-gray-700 hover:shadow-sm'
                         }`}
-                        onClick={() => { navigator.clipboard.writeText(address); }}
+                        onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(address); toast.success('Address copied!'); }}
                         aria-label="Copy address"
                         onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigator.clipboard.writeText(address); } }}
                       >
@@ -255,7 +262,7 @@ const CustomerCardList: React.FC<Omit<CustomerCardListProps, 'setSelectedCustome
                             ? 'bg-blue-50 text-blue-700 shadow-sm' 
                             : 'hover:bg-gray-50 hover:text-gray-700 hover:shadow-sm'
                         }`}
-                        onClick={() => openEditModal(customer)}
+                        onClick={(e) => { e.stopPropagation(); openEditModal(customer); }}
                         aria-label="Edit"
                         onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openEditModal(customer); } }}
                       >
@@ -274,7 +281,7 @@ const CustomerCardList: React.FC<Omit<CustomerCardListProps, 'setSelectedCustome
                             ? 'bg-red-50 text-red-700 shadow-sm' 
                             : 'hover:bg-red-50 hover:text-red-700 hover:shadow-sm'
                         }`}
-                        onClick={() => { setShowDeleteConfirm(true); }}
+                        onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(true); }}
                         aria-label="Delete"
                         onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowDeleteConfirm(true); } }}
                       >

@@ -1,4 +1,5 @@
 // apps/api/src/index.ts
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import serviceTypeRoutes from './routes/serviceType';

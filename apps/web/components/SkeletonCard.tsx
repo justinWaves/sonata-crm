@@ -2,15 +2,20 @@ import React from 'react';
 
 export default function SkeletonCard() {
   return (
-    <div className="h-24 w-full rounded-lg mb-2 bg-gray-100 animate-pulse flex flex-col gap-3 p-4">
-      <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-full bg-gray-200" />
-        <div className="flex-1 h-5 bg-gray-200 rounded" />
-        <div className="w-8 h-8 rounded-full bg-gray-200" />
-      </div>
-      <div className="flex-1 flex flex-col gap-2 mt-2">
-        <div className="h-4 w-1/2 bg-gray-200 rounded" />
-        <div className="h-4 w-1/3 bg-gray-200 rounded" />
+    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 md:p-5 flex flex-col gap-3 relative w-[calc(100vw-1rem)] max-w-full mx-[-0.5rem] md:mx-0 md:w-auto">
+      <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center gap-3">
+          <div className="w-14 h-14 min-w-[3.5rem] min-h-[3.5rem] rounded-full bg-gray-200 animate-pulse" />
+          <div className="flex flex-col gap-2">
+            <div className="h-6 w-32 bg-gray-200 rounded animate-pulse" />
+            <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
+            <div className="flex items-center gap-1 mt-1">
+              <div className="h-3 w-12 bg-gray-200 rounded animate-pulse" />
+              <div className="h-5 w-5 rounded-full bg-gray-200 animate-pulse" />
+            </div>
+          </div>
+        </div>
+        <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse" />
       </div>
     </div>
   );
