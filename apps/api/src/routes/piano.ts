@@ -60,6 +60,7 @@ router.post('/', async (req, res) => {
       serialNumber,
       notes,
       lastServiceDate,
+      photoUrl,
     } = req.body;
 
     const piano = await prisma.piano.create({
@@ -72,6 +73,7 @@ router.post('/', async (req, res) => {
         serialNumber,
         notes,
         lastServiceDate: lastServiceDate ? new Date(lastServiceDate) : null,
+        photoUrl,
       },
     });
     res.json(piano);

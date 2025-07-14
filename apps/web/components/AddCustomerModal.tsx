@@ -45,40 +45,31 @@ export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
   // Store initial form for dirty check
   const initialForm = React.useRef(form);
   const initialPianos = React.useRef<Piano[]>([]);
+  
+  // Memoize initial values to prevent infinite re-renders
+  const memoizedInitialValues = React.useMemo(() => ({
+    firstName: initialValues.firstName || '',
+    lastName: initialValues.lastName || '',
+    companyName: initialValues.companyName || '',
+    email: initialValues.email || '',
+    phone: initialValues.phone || '',
+    address: initialValues.address || '',
+    city: initialValues.city || '',
+    state: initialValues.state || '',
+    zipCode: initialValues.zipCode || '',
+    textUpdates: initialValues.textUpdates || false,
+    emailUpdates: initialValues.emailUpdates || false,
+  }), [initialValues.firstName, initialValues.lastName, initialValues.companyName, initialValues.email, initialValues.phone, initialValues.address, initialValues.city, initialValues.state, initialValues.zipCode, initialValues.textUpdates, initialValues.emailUpdates]);
+
   React.useEffect(() => {
     if (isOpen) {
-      setForm({
-        firstName: initialValues.firstName || '',
-        lastName: initialValues.lastName || '',
-        companyName: initialValues.companyName || '',
-        email: initialValues.email || '',
-        phone: initialValues.phone || '',
-        address: initialValues.address || '',
-        city: initialValues.city || '',
-        state: initialValues.state || '',
-        zipCode: initialValues.zipCode || '',
-        textUpdates: initialValues.textUpdates || false,
-        emailUpdates: initialValues.emailUpdates || false,
-      });
-      initialForm.current = {
-        firstName: initialValues.firstName || '',
-        lastName: initialValues.lastName || '',
-        companyName: initialValues.companyName || '',
-        email: initialValues.email || '',
-        phone: initialValues.phone || '',
-        address: initialValues.address || '',
-        city: initialValues.city || '',
-        state: initialValues.state || '',
-        zipCode: initialValues.zipCode || '',
-        textUpdates: initialValues.textUpdates || false,
-        emailUpdates: initialValues.emailUpdates || false,
-      };
+      setForm(memoizedInitialValues);
+      initialForm.current = memoizedInitialValues;
       const pianosVal = 'pianos' in initialValues && Array.isArray((initialValues as any).pianos) ? (initialValues as any).pianos : [];
       setPianos(pianosVal);
       initialPianos.current = pianosVal;
     }
-    // eslint-disable-next-line
-  }, [isOpen, editingCustomerId, initialValues]);
+  }, [isOpen, editingCustomerId, memoizedInitialValues]);
 
   const isDirty =
     Object.keys(form).some(
@@ -101,6 +92,7 @@ export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
   }
 
   const handleInputChange = (field: string, value: string | boolean) => {
+    console.log('Input change:', field, value);
     if (field === 'phone' && typeof value === 'string') {
       value = formatPhoneNumber(value);
     }
@@ -127,80 +119,112 @@ export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
       setErrors(prev => ({ ...prev, form: 'Please fill out all required fields.' }));
       return;
     }
-    if (editingCustomerId) {
-      // 1. Find removed pianos (in initialPianos but not in pianos)
-      const removedPianos = initialPianos.current.filter(
-        (initPiano) => !pianos.some((p) => p.id === initPiano.id)
-      );
-      // 2. Find new pianos (in pianos but not in initialPianos, i.e., no id)
-      const newPianos = pianos.filter((p) => !p.id);
-      // 3. Find updated pianos (same id, but fields changed)
-      const updatedPianos = pianos.filter((p) => {
-        if (!p.id) return false;
-        const orig = initialPianos.current.find((ip) => ip.id === p.id);
-        return orig && JSON.stringify(p) !== JSON.stringify(orig);
-      });
+    
+    try {
+      if (editingCustomerId) {
+        // 1. Find removed pianos (in initialPianos but not in pianos)
+        const removedPianos = initialPianos.current.filter(
+          (initPiano) => !pianos.some((p) => p.id === initPiano.id)
+        );
+        // 2. Find new pianos (in pianos but not in initialPianos, i.e., no id)
+        const newPianos = pianos.filter((p) => !p.id);
+        // 3. Find updated pianos (same id, but fields changed)
+        const updatedPianos = pianos.filter((p) => {
+          if (!p.id) return false;
+          const orig = initialPianos.current.find((ip) => ip.id === p.id);
+          return orig && JSON.stringify(p) !== JSON.stringify(orig);
+        });
 
-      // 4. Await all requests
-      await Promise.all([
-        ...removedPianos.map((p) => fetch(`/api/pianos?id=${p.id}`, { method: 'DELETE' })),
-        ...newPianos.map((p) => fetch('/api/pianos', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...p, customerId: editingCustomerId }),
-        })),
-        ...updatedPianos.map((p) => fetch(`/api/pianos?id=${p.id}`, {
+        // 4. Await all requests
+        await Promise.all([
+          ...removedPianos.map((p) => fetch(`/api/pianos?id=${p.id}`, { method: 'DELETE' })),
+          ...newPianos.map((p) => fetch('/api/pianos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...p, customerId: editingCustomerId }),
+          })),
+          ...updatedPianos.map((p) => fetch(`/api/pianos?id=${p.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(p),
+          })),
+        ]);
+
+        // Then update the customer as before
+        const response = await fetch('/api/customers', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(p),
-        })),
-      ]);
-
-      // Then update the customer as before
-      const response = await fetch('/api/customers', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, id: editingCustomerId }),
-      });
-      if (!response.ok) {
-        const data = await response.json();
-        setErrors({ form: data.error || 'Failed to update customer' });
+          body: JSON.stringify({ ...form, id: editingCustomerId }),
+        });
+        if (!response.ok) {
+          const data = await response.json();
+          setErrors({ form: data.error || 'Failed to update customer' });
+          return;
+        }
+        const updatedCustomer = await response.json();
+        setErrors({});
+        onSave(updatedCustomer);
         return;
       }
-      const updatedCustomer = await response.json();
-      setErrors({});
-      onSave(updatedCustomer);
-      return;
-    }
-    // Add mode: POST request
-    const response = await fetch('/api/customers', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    });
-    if (!response.ok) {
-      const data = await response.json();
-      setErrors({ form: data.error || 'Failed to add customer' });
-      return;
-    }
-    const newCustomer = await response.json();
-    // 2. Create pianos for this customer
-    for (const piano of pianos) {
-      await fetch('/api/pianos', {
+      
+      // Add mode: Create customer first
+      const customerResponse = await fetch('/api/customers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...piano, customerId: newCustomer.id }),
+        body: JSON.stringify(form),
       });
+      
+      if (!customerResponse.ok) {
+        const data = await customerResponse.json();
+        setErrors({ form: data.error || 'Failed to add customer' });
+        return;
+      }
+      
+      const newCustomer = await customerResponse.json();
+      
+      // Create pianos for this customer if any exist
+      if (pianos.length > 0) {
+        try {
+          const pianoPromises = pianos.map(async (piano) => {
+            const pianoData = { ...piano, customerId: newCustomer.id };
+            
+            const response = await fetch('/api/pianos', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(pianoData),
+            });
+            
+            if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(`Failed to create piano: ${errorData.error || 'Unknown error'}`);
+            }
+            
+            return response.json();
+          });
+          
+          await Promise.all(pianoPromises);
+        } catch (pianoError) {
+          console.error('Failed to create pianos:', pianoError);
+          // Don't fail the entire operation if piano creation fails
+          // The customer was created successfully
+        }
+      }
+      
+      // Reset form
+      setForm({
+        firstName: '', lastName: '', companyName: '', email: '', phone: '', address: '', city: '', state: '', zipCode: '', textUpdates: false, emailUpdates: false,
+      });
+      setPianos([]);
+      setErrors({});
+      onSave(newCustomer);
+    } catch (error) {
+      console.error('Error saving customer:', error);
+      setErrors({ form: 'An unexpected error occurred. Please try again.' });
     }
-    setForm({
-      firstName: '', lastName: '', companyName: '', email: '', phone: '', address: '', city: '', state: '', zipCode: '', textUpdates: false, emailUpdates: false,
-    });
-    setPianos([]);
-    setErrors({});
-    onSave(newCustomer);
   };
 
   const handleClose = () => {
+    console.log('AddCustomerModal handleClose called');
     setForm({
       firstName: '',
       lastName: '',

@@ -6,7 +6,7 @@ import { toast } from 'react-hot-toast'
 import CustomerCardModal from '../../../../../../../components/CustomerCardModal'
 import { getCustomer } from '../../../../../../../lib/actions/customers'
 import type { Customer } from '../../../../../../../types/customer'
-import SkeletonModal from '../../../../components/SkeletonModal';
+import SkeletonModal from '../../../../../../../components/SkeletonModal';
 
 interface ViewCustomerModalProps {
   params: Promise<{

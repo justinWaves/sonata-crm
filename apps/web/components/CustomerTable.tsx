@@ -38,6 +38,9 @@ interface CustomerTableProps {
   openEditModal: (c: Customer) => void;
   searchTerm?: string;
   highlightMatch?: (text: string | null | undefined, search: string) => React.ReactNode;
+  sort?: { column: string; direction: 'asc' | 'desc' };
+  onSort?: (column: string) => void;
+  displayCount?: { startIndex: number; endIndex: number; totalCount: number };
 }
 
 const ChevronUp = () => (
@@ -81,58 +84,17 @@ export const CustomerTable: React.FC<Omit<CustomerTableProps, 'selectedCustomer'
     openEditModal,
     searchTerm = '',
     highlightMatch,
+    sort = { column: 'firstName', direction: 'asc' },
+    onSort,
+    displayCount,
   } = props;
   const { query, selectedIds, setSelectedIds, toggleSelect } = useCustomerTable();
   const { selectedCustomer, setSelectedCustomer, fetchCustomers, setCustomers, openCustomerModal, closeCustomerModal } = useCustomerContext();
-  const [sort, setSort] = useState<{ column: string; direction: 'asc' | 'desc' }>({ column: 'firstName', direction: 'asc' });
   const headerCheckboxRef = useRef<HTMLInputElement>(null);
   const [openMenuKey, setOpenMenuKey] = useState<string | null>(null);
 
-  const filter = (c: Customer) => {
-    const q = searchTerm.toLowerCase();
-    return (
-      c.firstName.toLowerCase().includes(q) ||
-      c.lastName.toLowerCase().includes(q) ||
-      (c.email || '').toLowerCase().includes(q) ||
-      c.phone.toLowerCase().includes(q) ||
-      (c.address || '').toLowerCase().includes(q) ||
-      (c.city || '').toLowerCase().includes(q) ||
-      (c.state || '').toLowerCase().includes(q) ||
-      (c.zipCode || '').toLowerCase().includes(q)
-    );
-  };
-  let filtered = customers.filter(filter);
-
-  // Sorting logic
-  const getSortValue = (c: Customer) => {
-    switch (sort.column) {
-      case 'firstName':
-        return (c.firstName + ' ' + c.lastName).toLowerCase();
-      case 'email':
-        return (c.email || '').toLowerCase();
-      case 'phone':
-        return c.phone;
-      case 'city':
-        return (c.city || '').toLowerCase();
-      default:
-        return '';
-    }
-  };
-  filtered = [...filtered].sort((a, b) => {
-    const aVal = getSortValue(a);
-    const bVal = getSortValue(b);
-    if (aVal < bVal) return sort.direction === 'asc' ? -1 : 1;
-    if (aVal > bVal) return sort.direction === 'asc' ? 1 : -1;
-    return 0;
-  });
-
-  const handleSort = (column: string) => {
-    setSort((prev) =>
-      prev.column === column
-        ? { column, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
-        : { column, direction: 'asc' }
-    );
-  };
+  // Customers are already filtered and sorted from the parent component
+  const filtered = customers;
 
   useEffect(() => {
     if (headerCheckboxRef.current) {
@@ -206,8 +168,23 @@ export const CustomerTable: React.FC<Omit<CustomerTableProps, 'selectedCustomer'
   return (
     <div className="bg-white rounded-2xl shadow-xl p-8 w-full">
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Customers</h2>
-        <p className="text-base text-gray-500">View and manage your customers</p>
+        <div className="flex justify-between items-start">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Customers</h2>
+            <p className="text-base text-gray-500">View and manage your customers</p>
+          </div>
+          {displayCount && (
+            <div className="text-sm text-gray-500 font-medium">
+              {displayCount.totalCount === 0 ? (
+                'No customers found'
+              ) : displayCount.startIndex === displayCount.endIndex ? (
+                `Showing ${displayCount.startIndex} of ${displayCount.totalCount} customer${displayCount.totalCount !== 1 ? 's' : ''}`
+              ) : (
+                `Showing ${displayCount.startIndex}-${displayCount.endIndex} of ${displayCount.totalCount} customer${displayCount.totalCount !== 1 ? 's' : ''}`
+              )}
+            </div>
+          )}
+        </div>
       </div>
       <div className="overflow-x-auto">
         <table className="min-w-max">
@@ -227,25 +204,25 @@ export const CustomerTable: React.FC<Omit<CustomerTableProps, 'selectedCustomer'
                   }}
                 />
               </th>
-              <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600 cursor-pointer select-none" onClick={() => handleSort('firstName')}>
+              <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600 cursor-pointer select-none" onClick={() => onSort?.('firstName')}>
                 Name
                 {sort.column === 'firstName' && (
                   sort.direction === 'asc' ? <ChevronUp /> : <ChevronDown />
                 )}
               </th>
-              <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600 cursor-pointer select-none" onClick={() => handleSort('phone')}>
+              <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600 cursor-pointer select-none" onClick={() => onSort?.('phone')}>
                 Phone
                 {sort.column === 'phone' && (
                   sort.direction === 'asc' ? <ChevronUp /> : <ChevronDown />
                 )}
               </th>
-              <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600 cursor-pointer select-none" onClick={() => handleSort('email')}>
+              <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600 cursor-pointer select-none" onClick={() => onSort?.('email')}>
                 Email
                 {sort.column === 'email' && (
                   sort.direction === 'asc' ? <ChevronUp /> : <ChevronDown />
                 )}
               </th>
-              <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600 cursor-pointer select-none" onClick={() => handleSort('city')}>
+              <th className="text-left py-4 px-6 text-sm font-semibold text-gray-600 cursor-pointer select-none" onClick={() => onSort?.('city')}>
                 Address
                 {sort.column === 'city' && (
                   sort.direction === 'asc' ? <ChevronUp /> : <ChevronDown />

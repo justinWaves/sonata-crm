@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback } from 'react';
 
 // Generates a short random alphanumeric referral code

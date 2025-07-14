@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'react-hot-toast'
 import { CustomerTableProvider } from '../../../../components/CustomerTableContext'
@@ -12,6 +12,7 @@ import CustomerCardList from '../../../../components/CustomerCardList'
 import Pagination from '../../../../components/Pagination'
 import { highlightMatch } from '../../../../lib/utils'
 import type { Customer } from '../../../../types/customer'
+import { AddCustomerModal } from '../../../../components/AddCustomerModal'
 
 interface CustomersClientProps {
   initialCustomers: Customer[]
@@ -25,6 +26,13 @@ export default function CustomersClient({ initialCustomers }: CustomersClientPro
   const [currentPage, setCurrentPage] = useState(1)
   const pageSize = 15
   const [searchTerm, setSearchTerm] = useState('')
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [sort, setSort] = useState<{ column: string; direction: 'asc' | 'desc' }>({ column: 'firstName', direction: 'asc' })
+
+  // Reset to first page when search term changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm])
 
   // Simulate fetchCustomers for compatibility with BulkBar
   const fetchCustomers = async () => {
@@ -43,15 +51,22 @@ export default function CustomersClient({ initialCustomers }: CustomersClientPro
   const closeCustomerModal = () => setSelectedCustomer(null)
   const openPianoModal = (customer: Customer) => openCustomerModal(customer)
   const closeModal = () => setSelectedCustomer(null)
-  const handleAddCustomer = async () => {}
+  const handleAddCustomer = async (customerData: Customer) => {
+    try {
+      // Add the new customer to the local state
+      setCustomers(prev => [...prev, customerData])
+      toast.success('Customer added successfully!')
+      setIsAddModalOpen(false)
+    } catch (error) {
+      toast.error('Failed to add customer')
+    }
+  }
   const handleEditCustomer = async () => {}
   const handleDeleteCustomer = async () => {}
   
   // Stub state for compatibility
   const isModalOpen = false
   const setIsModalOpen = () => {}
-  const isAddModalOpen = false
-  const setIsAddModalOpen = () => {}
   const isEditModalOpen = false
   const setIsEditModalOpen = () => {}
   const isAddPianoModalOpen = false
@@ -66,6 +81,7 @@ export default function CustomersClient({ initialCustomers }: CustomersClientPro
   const setShowDeleteConfirm = () => {}
   const deleting = false
 
+  // Filter customers based on search term
   const filteredCustomers = customers.filter((customer) => {
     const term = searchTerm.toLowerCase()
     return (
@@ -79,8 +95,50 @@ export default function CustomersClient({ initialCustomers }: CustomersClientPro
       (customer.zipCode?.toLowerCase() || '').includes(term)
     )
   })
-  const totalPages = Math.ceil(filteredCustomers.length / pageSize)
-  const paginatedCustomers = filteredCustomers.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+
+  // Sort function
+  const getSortValue = (c: Customer) => {
+    switch (sort.column) {
+      case 'firstName':
+        return (c.firstName + ' ' + c.lastName).toLowerCase()
+      case 'email':
+        return (c.email || '').toLowerCase()
+      case 'phone':
+        return c.phone
+      case 'city':
+        return (c.city || '').toLowerCase()
+      default:
+        return ''
+    }
+  }
+
+  // Sort filtered customers
+  const sortedCustomers = [...filteredCustomers].sort((a, b) => {
+    const aVal = getSortValue(a)
+    const bVal = getSortValue(b)
+    if (aVal < bVal) return sort.direction === 'asc' ? -1 : 1
+    if (aVal > bVal) return sort.direction === 'asc' ? 1 : -1
+    return 0
+  })
+
+  const totalPages = Math.ceil(sortedCustomers.length / pageSize)
+  const paginatedCustomers = sortedCustomers.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+
+  // Calculate display range for the indicator
+  const startIndex = (currentPage - 1) * pageSize + 1
+  const endIndex = Math.min(currentPage * pageSize, sortedCustomers.length)
+  const totalCount = sortedCustomers.length
+
+  // Handle sort changes
+  const handleSort = (column: string) => {
+    setSort((prev) =>
+      prev.column === column
+        ? { column, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
+        : { column, direction: 'asc' }
+    )
+    // Reset to first page when sorting changes
+    setCurrentPage(1)
+  }
 
   return (
     <CustomerProvider
@@ -101,7 +159,7 @@ export default function CustomersClient({ initialCustomers }: CustomersClientPro
             <SearchBar value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
           </div>
           <button
-            onClick={() => router.push('/tech/dashboard/customers/new')}
+            onClick={() => setIsAddModalOpen(true)}
             className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ml-4 text-nowrap"
           >
             Add Customer
@@ -129,7 +187,7 @@ export default function CustomersClient({ initialCustomers }: CustomersClientPro
             showDeleteConfirm={showDeleteConfirm}
             setShowDeleteConfirm={setShowDeleteConfirm}
             deleting={deleting}
-            handleAddCustomer={handleAddCustomer}
+            handleAddCustomer={async () => {}}
             handleEditCustomer={handleEditCustomer}
             handleDeleteCustomer={handleDeleteCustomer}
             openPianoModal={openPianoModal}
@@ -137,6 +195,9 @@ export default function CustomersClient({ initialCustomers }: CustomersClientPro
             openEditModal={openEditModal}
             searchTerm={searchTerm}
             highlightMatch={highlightMatch}
+            sort={sort}
+            onSort={handleSort}
+            displayCount={{ startIndex, endIndex, totalCount }}
           />
           <Pagination
             currentPage={currentPage}
@@ -145,6 +206,16 @@ export default function CustomersClient({ initialCustomers }: CustomersClientPro
           />
         </div>
         <div className="flex flex-col gap-2 md:hidden">
+          {/* Mobile display count */}
+          <div className="text-sm text-gray-400 font-medium text-center">
+            {totalCount === 0 ? (
+              'No customers found'
+            ) : startIndex === endIndex ? (
+              `Showing ${startIndex} of ${totalCount} customer${totalCount !== 1 ? 's' : ''}`
+            ) : (
+              `Showing ${startIndex}-${endIndex} of ${totalCount} customer${totalCount !== 1 ? 's' : ''}`
+            )}
+          </div>
           <CustomerCardList
             customers={paginatedCustomers}
             openEditModal={openEditModal}
@@ -161,6 +232,12 @@ export default function CustomersClient({ initialCustomers }: CustomersClientPro
         </div>
         <BulkBar customers={customers} fetchCustomers={fetchCustomers} setCustomers={setCustomers} />
         </div>
+        
+        <AddCustomerModal
+          isOpen={isAddModalOpen}
+          onClose={() => setIsAddModalOpen(false)}
+          onSave={handleAddCustomer}
+        />
       </CustomerTableProvider>
     </CustomerProvider>
   )

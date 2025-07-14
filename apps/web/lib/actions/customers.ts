@@ -13,12 +13,25 @@ export async function getCustomers() {
     throw new Error('Unauthorized')
   }
   
-  const response = await fetch(`${API_BASE_URL}/customers?technicianId=${session.user.id}`)
-  if (!response.ok) {
-    throw new Error('Failed to fetch customers')
+  try {
+    const response = await fetch(`${API_BASE_URL}/customers?technicianId=${session.user.id}`, {
+      // Add timeout to prevent hanging
+      signal: AbortSignal.timeout(5000)
+    })
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.error || `HTTP ${response.status}: Failed to fetch customers`)
+    }
+    
+    return response.json()
+  } catch (error) {
+    console.error('Error fetching customers:', error)
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('Request timeout - API server may be down')
+    }
+    throw new Error(`Failed to fetch customers: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
-  
-  return response.json()
 }
 
 export async function getCustomer(customerId: string) {
