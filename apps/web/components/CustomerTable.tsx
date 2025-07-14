@@ -8,7 +8,7 @@ import { IoCopyOutline, IoMailOutline, IoEllipsisHorizontal, IoPencilOutline, Io
 import { Popover, Menu } from '@headlessui/react';
 import CustomerCardModal from './CustomerCardModal';
 import type { Customer } from '../types/customer';
-import { useCustomerContext } from '../providers/CustomerContext';
+import { useCustomerContext } from '../app/tech/dashboard/customers/CustomerProvider';
 
 interface CustomerTableProps {
   customers: Customer[];

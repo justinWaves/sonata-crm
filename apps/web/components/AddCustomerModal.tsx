@@ -78,7 +78,7 @@ export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
       initialPianos.current = pianosVal;
     }
     // eslint-disable-next-line
-  }, [isOpen, editingCustomerId]);
+  }, [isOpen, editingCustomerId, initialValues]);
 
   const isDirty =
     Object.keys(form).some(

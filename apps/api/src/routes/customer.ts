@@ -26,6 +26,29 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Get a single customer by ID
+router.get('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const customer = await prisma.customer.findUnique({
+      where: { id },
+      include: {
+        pianos: true
+      }
+    });
+    
+    if (!customer) {
+      return res.status(404).json({ error: 'Customer not found' });
+    }
+    
+    res.json(customer);
+  } catch (err) {
+    console.error('Error fetching customer:', err);
+    res.status(500).json({ error: 'Failed to fetch customer' });
+  }
+});
+
 // Create a new customer
 router.post('/', async (req, res) => {
   try {

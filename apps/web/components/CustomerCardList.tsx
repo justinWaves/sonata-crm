@@ -5,7 +5,7 @@ import { toast } from 'react-hot-toast';
 import SkeletonCard from './SkeletonCard';
 import type { Customer } from '../types/customer';
 import CustomerCardModal from './CustomerCardModal';
-import { useCustomerContext } from '../providers/CustomerContext';
+import { useCustomerContext } from '../app/tech/dashboard/customers/CustomerProvider';
 
 interface CustomerCardListProps {
   customers: Customer[];
